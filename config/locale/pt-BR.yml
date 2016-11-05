@@ -58,6 +58,7 @@ pt-BR:
       other: '%{count}'
 
     columns:
+      code: 'Código'
       description: 'Descrição'
       discount: 'Desconto'
       redeemed: 'Utilizado'

@@ -58,6 +58,7 @@ en:
       other: '%{count}'
 
     columns:
+      code: 'Code'
       description: 'Description'
       discount: 'Discount'
       redeemed: 'Redeemed'
