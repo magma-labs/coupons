@@ -1,15 +1,4 @@
 class Coupons::CouponsController < Coupons::ApplicationController
-  def apply
-    coupon_code = params[:coupon]
-    amount = BigDecimal(params.fetch(:amount, '0.0'))
-    options = Coupons
-              .apply(params[:coupon], amount: amount)
-              .slice(:amount, :discount, :total)
-              .reduce({}) {|buffer, (key, value)| buffer.merge(key => Float(value)) }
-
-    render json: options
-  end
-
   def index
     paginator = Coupons.configuration.paginator
     @coupons = Coupons::Collection.new(paginator.call(Coupon.order(created_at: :desc), params[:page]))
@@ -62,6 +51,17 @@ class Coupons::CouponsController < Coupons::ApplicationController
 
     redirect_to coupons_path,
       notice: t('coupons.flash.coupons.destroy.notice')
+  end
+
+  def apply
+    coupon_code = params[:coupon]
+    amount = BigDecimal(params.fetch(:amount, '0.0'))
+    options = Coupons
+              .apply(params[:coupon], amount: amount)
+              .slice(:amount, :discount, :total)
+              .reduce({}) {|buffer, (key, value)| buffer.merge(key => Float(value)) }
+
+    render json: options
   end
 
   def batch
