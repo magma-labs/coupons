@@ -84,7 +84,7 @@ es:
     labels:
       coupon:
         description: 'Descripción'
-        redemption_limit: 'Límite de canjeo'
+        redemption_limit_global: 'Límite de canjeo'
         type: 'Tipo'
         amount: 'Cantidad'
         code: 'Código de descuento'
@@ -96,7 +96,7 @@ es:
         type: 'Elija el tipo de descuento.'
         code: 'El cliente capturará este código al momento de realizar el pago.'
         description: 'Descripción del cupón que permita recordar su finalidad.'
-        redemption_limit: 'Cantidad de veces que este cupón se puede usar. Cero significa sin límite.'
+        redemption_limit_global: 'Cantidad de veces que este cupón se puede usar. Cero significa sin límite.'
         amount: 'Esta es la cantidad del descuento. 0-100 define porcentaje. Cero o número positivo define cantidad'
         valid_from: 'Fecha de inicio de vigencia.'
         valid_until: 'Fecha de expiración. Si se omite, no expirará.'

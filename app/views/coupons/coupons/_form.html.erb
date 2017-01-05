@@ -27,13 +27,13 @@
 
   <div class="form-group">
     <div class="form-label">
-      <%= form.label :redemption_limit %>
-      <%= form.hint  :redemption_limit %>
+      <%= form.label :redemption_limit_global %>
+      <%= form.hint :redemption_limit_global %>
     </div>
 
     <div class="form-control">
-      <%= form.number_field :redemption_limit, min: 0 %>
-      <%= form.error_for :redemption_limit %>
+      <%= form.number_field :redemption_limit_global, min: 0 %>
+      <%= form.error_for :redemption_limit_global %>
     </div>
   </div>
 

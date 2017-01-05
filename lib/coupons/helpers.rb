@@ -3,7 +3,9 @@ module Coupons
   # Create an object that extends from `Coupons::Helpers`, like the following:
   #
   #     Coupon = Object.new.extend(Coupons:Helpers)
-  #     coupon = Coupon.create(amount: 10, type: 'percentage', redemption_limit: 100)
+  #     coupon = Coupon.create(
+  #       amount: 10, type: 'percentage', redemption_limit_global: 100
+  #     )
   #     #=> <Coupons::Models::Coupon instance>
   #
   #     # Apply the coupon code we created above to $42.
@@ -32,7 +34,9 @@ module Coupons
       coupon = find(code, options)
       return options unless coupon
 
-      coupon.redemptions.create!(options.slice(:user_id, :order_id))
+      coupon.redemptions.create!(
+        options.slice(:user_id, :order_id)
+      )
       coupon.apply(options)
     end
 

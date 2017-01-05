@@ -5,7 +5,8 @@ class SetupCoupons < ActiveRecord::Migration
       t.string :description, null: true
       t.date :valid_from, null: false
       t.date :valid_until, null: true
-      t.integer :redemption_limit, default: 1, null: false
+      t.integer :redemption_limit_global, default: 1, null: false
+      t.integer :redemption_limit_user, default: 0, null: false
       t.integer :coupon_redemptions_count, default: 0, null: false
       t.integer :amount, null: false, default: 0
       t.string :type, null: false

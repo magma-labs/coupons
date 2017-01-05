@@ -36,7 +36,7 @@ describe Coupons::Helpers do
   end
 
   it 'redeems coupon' do
-    coupon = maker.create(amount: 10, type: 'amount', redemption_limit: 2)
+    coupon = maker.create(amount: 10, type: 'amount', redemption_limit_global: 2)
 
     expect {
       maker.redeem(coupon.code, amount: 100)

@@ -88,7 +88,7 @@ en:
     labels:
       coupon:
         description: 'Description'
-        redemption_limit: 'Redemption Limit'
+        redemption_limit_global: 'Redemption Limit'
         type: 'Type'
         amount: 'Amount'
         code: 'Discount Code'
@@ -100,7 +100,7 @@ en:
         type: 'Select how this coupon will apply the discount.'
         code: 'Customers will inform this code when checking out.'
         description: 'Describe this coupon, so you can remember why it exists.'
-        redemption_limit: 'Set how many times this coupon can be used. Zero means no limit.'
+        redemption_limit_global: 'Set how many times this coupon can be used. Zero means no limit.'
         amount: 'This is the actual discount amount. 0-100 for percentage, zero or positive number for amount.'
         valid_from: 'When this coupon will be available.'
         valid_until: 'When will this coupon expire. By default, it does not expire.'

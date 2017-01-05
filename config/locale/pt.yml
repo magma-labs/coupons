@@ -88,7 +88,7 @@ pt:
     labels:
       coupon:
         description: 'Descrição'
-        redemption_limit: 'Limite de Uso'
+        redemption_limit_global: 'Limite de Uso'
         type: 'Tipo'
         amount: 'Quantia'
         code: 'Código de Desconto'
@@ -100,7 +100,7 @@ pt:
         type: 'Escolha como o desconto será aplicado.'
         code: 'Este é o código que deverá ser informado na página de checkout.'
         description: 'Descreva este vale, assim saberá por que ele existe.'
-        redemption_limit: 'Defina quantas vezes o vale pode ser usado. Zero significa sem limites.'
+        redemption_limit_global: 'Defina quantas vezes o vale pode ser usado. Zero significa sem limites.'
         amount: 'O desconto que será aplicado. De 0-100 para percentagem, zero ou um número positivo para um valor.'
         valid_from: 'Data de início do vale.'
         valid_until: 'Data de fim do vale. Por padrão, não expira nunca.'

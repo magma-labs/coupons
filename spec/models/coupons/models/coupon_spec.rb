@@ -77,14 +77,14 @@ describe Coupons::Models::Coupon do
   end
 
   it 'requires non-zero redemption limit' do
-    coupon = create_coupon(redemption_limit: -1)
-    expect(coupon.errors[:redemption_limit]).not_to be_empty
+    coupon = create_coupon(redemption_limit_global: -1)
+    expect(coupon.errors[:redemption_limit_global]).not_to be_empty
 
-    coupon = create_coupon(redemption_limit: 0)
-    expect(coupon.errors[:redemption_limit]).to be_empty
+    coupon = create_coupon(redemption_limit_global: 0)
+    expect(coupon.errors[:redemption_limit_global]).to be_empty
 
-    coupon = create_coupon(redemption_limit: 100)
-    expect(coupon.errors[:redemption_limit]).to be_empty
+    coupon = create_coupon(redemption_limit_global: 100)
+    expect(coupon.errors[:redemption_limit_global]).to be_empty
   end
 
   it 'generates default coupon code' do
@@ -123,7 +123,7 @@ describe Coupons::Models::Coupon do
   end
 
   it 'is redeemable when have no limit' do
-    coupon = create_coupon(amount: 100, type: 'amount', redemption_limit: 0)
+    coupon = create_coupon(amount: 100, type: 'amount', redemption_limit_global: 0)
     expect(coupon.reload).to be_redeemable
   end
 

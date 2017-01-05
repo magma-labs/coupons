@@ -34,7 +34,7 @@ module Coupons
         only_integer: true,
         if: :amount_based?
 
-      validates_numericality_of :redemption_limit,
+      validates_numericality_of :redemption_limit_global,
         greater_than_or_equal_to: 0
 
       validate :validate_dates
@@ -62,7 +62,7 @@ module Coupons
       end
 
       def has_available_redemptions?
-        redemptions_count.zero? || redemptions_count < redemption_limit
+        redemptions_count.zero? || redemptions_count < redemption_limit_global
       end
 
       def started?
