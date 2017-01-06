@@ -89,6 +89,7 @@ pt-BR:
       coupon:
         description: 'Descrição'
         redemption_limit_global: 'Limite de Uso'
+        redemption_limit_user:
         type: 'Tipo'
         amount: 'Quantia'
         code: 'Código de Desconto'

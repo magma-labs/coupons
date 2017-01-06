@@ -84,7 +84,8 @@ es:
     labels:
       coupon:
         description: 'Descripción'
-        redemption_limit_global: 'Límite de canjeo'
+        redemption_limit_global: 'Límite de canjeo global'
+        redemption_limit_user: 'Límite de canjeo por usuario'
         type: 'Tipo'
         amount: 'Cantidad'
         code: 'Código de descuento'

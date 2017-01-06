@@ -88,7 +88,8 @@ en:
     labels:
       coupon:
         description: 'Description'
-        redemption_limit_global: 'Redemption Limit'
+        redemption_limit_global: 'Global Redemption Limit'
+        redemption_limit_user: 'Redemption Limit by User'
         type: 'Type'
         amount: 'Amount'
         code: 'Discount Code'
