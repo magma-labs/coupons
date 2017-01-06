@@ -9,6 +9,7 @@ feature 'Create coupon' do
 
     fill_in label('coupon.description'), with: 'DESC'
     fill_in label('coupon.redemption_limit_global'), with: '1'
+    fill_in label('coupon.redemption_limit_user'), with: '1'
     select t('coupons.coupon.type.amount'), from: label('coupon.type')
     fill_in label('coupon.amount'), with: '10'
     click_button t('coupons.coupon.buttons.create')

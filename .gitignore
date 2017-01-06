@@ -1,19 +1,24 @@
+# Directories
 /.bundle/
 /.yardoc
-/Gemfile.lock
 /_yardoc/
 /coverage/
 /doc/
+/Gemfile.lock
 /pkg/
 /spec/reports/
 /tmp/
-*.bundle
-*.so
-*.o
+
+# Files
 *.a
-mkmf.log
-log
-*.log
-*.sqlite3
+*.bundle
 *.lock
+*.log
+*.o
+*.so
+*.sqlite3
+*.sublime*
+log
+mkmf.log
 tmp
+
