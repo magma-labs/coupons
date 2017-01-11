@@ -52,6 +52,7 @@ module Coupons
       options[:discount] = 0
       options[:total] = options[:amount]
       coupon = find(code, options)
+
       return options unless coupon
 
       coupon.apply(options)

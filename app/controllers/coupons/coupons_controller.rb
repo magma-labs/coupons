@@ -61,10 +61,11 @@ class Coupons::CouponsController < Coupons::ApplicationController
   end
 
   def apply
-    coupon_code = params[:coupon]
+    coupon_code = params[:coupon_code].strip
+    user_id = params[:user_id].strip
     amount = BigDecimal(params.fetch(:amount, '0.0'))
     options = Coupons
-              .apply(params[:coupon], amount: amount)
+              .apply(coupon_code, amount: amount, user_id: user_id)
               .slice(:amount, :discount, :total)
               .reduce({}) {|buffer, (key, value)| buffer.merge(key => Float(value)) }
 
