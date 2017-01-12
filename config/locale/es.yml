@@ -31,7 +31,7 @@ es:
     are_you_sure_you_want_to_remove_html: >
       ¿Seguro que deseas eliminar este cupón?
     you_cant_undo_removal_html: >
-      Todo rastro del canjeo también se eliminará.
+      Todo rastro del canjeo también se elminará.
       <strong>No será posible deshacer esta acción.</strong>
     blank_slate:
       no_coupons: No hay cupones
@@ -65,7 +65,7 @@ es:
     actions:
       edit: 'Editar'
       remove: 'Eliminar'
-      confirm: "¡Sí, estoy seguro!"
+      confirm: "¡Si, estoy seguro!"
       cancel: '¡Olvídalo!'
       go_back: 'Regresar'
       duplicate: 'Duplicar'
