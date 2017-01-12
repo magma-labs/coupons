@@ -11,7 +11,8 @@ module Coupons
     end
 
     initializer 'coupons.locale' do |app|
-      app.config.i18n.load_path += Dir[File.expand_path('../../../config/locale/**/*.yml', __FILE__)]
+      dir = Dir[File.expand_path('../../../config/locale/**/*.yml', __FILE__)]
+      app.config.i18n.load_path += dir
     end
   end
 end

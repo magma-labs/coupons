@@ -34,7 +34,10 @@ module Coupons
         only_integer: true,
         if: :amount_based?
 
-      validates_numericality_of :redemption_limit,
+      validates_numericality_of :redemption_limit_global,
+        greater_than_or_equal_to: 0
+
+      validates_numericality_of :redemption_limit_user,
         greater_than_or_equal_to: 0
 
       validate :validate_dates
@@ -61,16 +64,31 @@ module Coupons
         valid_until && valid_until <= Date.current
       end
 
-      def has_available_redemptions?
-        redemptions_count.zero? || redemptions_count < redemption_limit
+      def available_global_redemptions?
+        redemption_limit_global.zero? ||
+          redemptions_count < redemption_limit_global
+      end
+
+      def available_user_redemptions?(user_id)
+        # return true if no user limit
+        return true if redemption_limit_user.zero?
+        # return false if user limit set but user_id is blank
+        return false if user_id.blank?
+
+        user_redeemed = redemptions.where(user_id: user_id).count
+
+        return user_redeemed < redemption_limit_user
       end
 
       def started?
         valid_from <= Date.current
       end
 
-      def redeemable?
-        !expired? && has_available_redemptions? && started?
+      def redeemable?(user_id = nil)
+        !expired? &&
+          available_global_redemptions? &&
+          available_user_redemptions?(user_id) &&
+          started?
       end
 
       def to_partial_path

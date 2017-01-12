@@ -1,15 +1,4 @@
 class Coupons::CouponsController < Coupons::ApplicationController
-  def apply
-    coupon_code = params[:coupon]
-    amount = BigDecimal(params.fetch(:amount, '0.0'))
-    options = Coupons
-              .apply(params[:coupon], amount: amount)
-              .slice(:amount, :discount, :total)
-              .reduce({}) {|buffer, (key, value)| buffer.merge(key => Float(value)) }
-
-    render json: options
-  end
-
   def index
     paginator = Coupons.configuration.paginator
     @coupons = Coupons::Collection.new(paginator.call(Coupon.order(created_at: :desc), params[:page]))
@@ -36,7 +25,14 @@ class Coupons::CouponsController < Coupons::ApplicationController
 
   def duplicate
     existing_coupon = Coupon.find(params[:id])
-    attributes = existing_coupon.attributes.symbolize_keys.slice(:description, :valid_from, :valid_until, :redemption_limit, :amount, :type)
+    attributes = existing_coupon.attributes.symbolize_keys.slice(
+      :description,
+      :valid_from,
+      :valid_until,
+      :redemption_limit_global,
+      :amount,
+      :type
+    )
     @coupon = Coupon.new(attributes)
     render :new
   end
@@ -64,6 +60,17 @@ class Coupons::CouponsController < Coupons::ApplicationController
       notice: t('coupons.flash.coupons.destroy.notice')
   end
 
+  def apply
+    coupon_code = params[:coupon]
+    amount = BigDecimal(params.fetch(:amount, '0.0'))
+    options = Coupons
+              .apply(params[:coupon], amount: amount)
+              .slice(:amount, :discount, :total)
+              .reduce({}) {|buffer, (key, value)| buffer.merge(key => Float(value)) }
+
+    render json: options
+  end
+
   def batch
     if params[:remove_action]
       batch_removal
@@ -85,6 +92,14 @@ class Coupons::CouponsController < Coupons::ApplicationController
   def coupon_params
     params
       .require(:coupon)
-      .permit(:code, :redemption_limit, :description, :valid_from, :valid_until, :amount, :type)
+      .permit(
+        :code,
+        :redemption_limit_global,
+        :description,
+        :valid_from,
+        :valid_until,
+        :amount,
+        :type
+      )
   end
 end

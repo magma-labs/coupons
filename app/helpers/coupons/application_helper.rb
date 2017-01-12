@@ -21,7 +21,7 @@ module Coupons::ApplicationHelper
   end
 
   def redeemed(coupon)
-    limit = t('coupons.limit_html', count: coupon.redemption_limit)
+    limit = t('coupons.limit_html', count: coupon.redemption_limit_global)
     t('coupons.redeemed_html', count: coupon.redemptions_count, limit: limit)
   end
 

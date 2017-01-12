@@ -24,7 +24,7 @@ module Coupons
     def initialize
       @resolvers = [Resolver.new]
       @generator = Generator.new
-      @finder = Finders::FirstAvailable
+      @finder = Finders::UserAvailability
       @per_page = 50
       @pagination_adapter = if defined?(Kaminari)
                               :kaminari
@@ -41,7 +41,7 @@ module Coupons
       @authorizer = proc do |controller|
         if Rails.env.production?
           controller.render(
-            text: 'Coupouns: not enabled in production environments',
+            text: 'Coupons: not enabled in production environments',
             status: 403
           )
         end
