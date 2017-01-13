@@ -61,6 +61,7 @@ es:
       discount: 'Descuento'
       redeemed: 'Canjeado'
       expiration: 'Expiración'
+      status: 'Estado'
 
     actions:
       edit: 'Editar'
