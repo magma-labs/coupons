@@ -30,6 +30,7 @@ class Coupons::CouponsController < Coupons::ApplicationController
       :valid_from,
       :valid_until,
       :redemption_limit_global,
+      :redemption_limit_user,
       :amount,
       :type
     )
@@ -61,13 +62,16 @@ class Coupons::CouponsController < Coupons::ApplicationController
   end
 
   def apply
-    coupon_code = params[:coupon_code].strip
-    user_id = params[:user_id].strip
+    coupon_code = params[:coupon_code].try(:strip)
+    user_id = get_current_user.try(:id)
     amount = BigDecimal(params.fetch(:amount, '0.0'))
     options = Coupons
               .apply(coupon_code, amount: amount, user_id: user_id)
-              .slice(:amount, :discount, :total)
-              .reduce({}) {|buffer, (key, value)| buffer.merge(key => Float(value)) }
+              .slice(:amount, :discount, :total, :status)
+              .reduce({}) { |buffer, (key, value)|
+                value = value.to_f unless key == :status
+                buffer.merge(key => value)
+              }
 
     render json: options
   end
@@ -83,6 +87,10 @@ class Coupons::CouponsController < Coupons::ApplicationController
 
   private
 
+  def get_current_user
+    main_app.scope.env['warden'].try(:user)
+  end
+
   def batch_removal
     Coupon.where(id: params[:coupon_ids]).destroy_all
 
@@ -96,6 +104,7 @@ class Coupons::CouponsController < Coupons::ApplicationController
       .permit(
         :code,
         :redemption_limit_global,
+        :redemption_limit_user,
         :description,
         :valid_from,
         :valid_until,

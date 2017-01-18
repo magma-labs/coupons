@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'byebug'
 
 feature 'Remove multiple coupons', js: true do
   scenario 'remove all selected' do
@@ -7,7 +8,8 @@ feature 'Remove multiple coupons', js: true do
     visit '/coupons'
 
     check('coupon-selector')
-    click_on t('coupons.coupon.buttons.remove_selected')
+    sleep 1
+    click_button t('coupons.coupon.buttons.remove_selected')
 
     expect(current_path).to eq('/coupons')
     expect(page).to have_text(notice('coupons.batch.removal'))
@@ -20,7 +22,8 @@ feature 'Remove multiple coupons', js: true do
     visit '/coupons'
 
     find('.coupon:nth-child(1)').check('coupon_ids[]')
-    click_on t('coupons.coupon.buttons.remove_selected')
+    sleep 1
+    click_button t('coupons.coupon.buttons.remove_selected')
 
     expect(current_path).to eq('/coupons')
     expect(page).to have_text(notice('coupons.batch.removal'))
