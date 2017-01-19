@@ -8,7 +8,7 @@ feature 'Remove multiple coupons', js: true do
     visit '/coupons'
 
     check('coupon-selector')
-    sleep 1
+    sleep 0.2
     click_button t('coupons.coupon.buttons.remove_selected')
 
     expect(current_path).to eq('/coupons')
@@ -22,7 +22,7 @@ feature 'Remove multiple coupons', js: true do
     visit '/coupons'
 
     find('.coupon:nth-child(1)').check('coupon_ids[]')
-    sleep 1
+    sleep 0.2
     click_button t('coupons.coupon.buttons.remove_selected')
 
     expect(current_path).to eq('/coupons')

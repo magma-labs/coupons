@@ -24,6 +24,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'autoprefixer-rails'
   spec.add_dependency 'sass-rails'
   spec.add_dependency 'page_meta'
+  spec.add_dependency 'haml-rails'
 
   spec.add_development_dependency 'bundler'
   spec.add_development_dependency 'paginate'
@@ -38,5 +39,4 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'globalid'
   spec.add_development_dependency 'capybara'
   spec.add_development_dependency 'poltergeist'
-  spec.add_development_dependency 'haml-rails'
 end

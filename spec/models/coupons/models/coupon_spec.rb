@@ -2,7 +2,19 @@ require 'spec_helper'
 
 describe Coupons::Models::Coupon do
 
-  context 'columns' do
+  let(:valid_coupon_params) do
+    {
+      code: '556677',
+      amount: 50,
+      type: 'amount',
+      redemption_limit_global: 0,
+      redemption_limit_user: 0,
+      valid_from: 2.days.ago,
+      valid_until: 3.days.from_now
+    }
+  end
+
+  context 'fields' do
     describe 'code' do
       it 'is required' do
         coupon = create_coupon
@@ -15,6 +27,50 @@ describe Coupons::Models::Coupon do
       it 'generates default coupon code' do
         coupon = create_coupon
         expect(coupon.code).to match(/^[A-Z0-9]{6}$/)
+      end
+
+      context 'must be unique among valid coupons' do
+        it 'is accepted if code is unique' do
+          coupon1 = create_coupon valid_coupon_params
+          coupon2 = Coupons::Models::Coupon.new coupon1.attributes
+
+          coupon2.code = coupon1.code.to_i + 1
+
+          expect(coupon2).to be_valid
+        end
+
+        it 'is accepted if another coupon with the same code exists but is depleted' do
+          coupon1 = create_coupon valid_coupon_params
+          coupon2 = Coupons::Models::Coupon.new valid_coupon_params
+
+          coupon1.update redemption_limit_global: 1, coupon_redemptions_count: 1
+          coupon2.code = coupon1.code
+
+          expect(coupon2).to be_valid
+        end
+
+        it 'fails if another coupon has same code and its global limit is unlimited' do
+          coupon1 = create_coupon valid_coupon_params
+          coupon2 = create_coupon valid_coupon_params
+          trans_msg = t('activerecord.errors.messages.coupon_code_not_unique')
+
+          coupon2.code = coupon1.code
+
+          expect(coupon2).to be_invalid
+          expect(coupon2.errors[:code]).to include(trans_msg)
+        end
+
+        it "fails if another coupon has same code and isn't depeted" do
+          coupon1 = create_coupon valid_coupon_params
+          coupon2 = Coupons::Models::Coupon.new valid_coupon_params
+          trans_msg = t('activerecord.errors.messages.coupon_code_not_unique')
+
+          coupon1.update(redemption_limit_global: 1, coupon_redemptions_count: 0)
+          coupon2.code = coupon1.code
+
+          expect(coupon2).to be_invalid
+          expect(coupon2.errors[:code]).to include(trans_msg)
+        end
       end
     end
 
@@ -159,49 +215,38 @@ describe Coupons::Models::Coupon do
 
   describe '#redeemable?' do
 
-    let(:valid_coupon) do
-      create_coupon(
-        amount: 50,
-        type: 'amount',
-        redemption_limit_global: 0,
-        redemption_limit_user: 0,
-        valid_from: 2.days.ago,
-        valid_until: 3.days.from_now
-      )
-    end
-
     it 'if not expired' do
-      coupon = valid_coupon
+      coupon = create_coupon valid_coupon_params
       coupon.valid_until = 3.days.from_now
       expect(coupon.reload).to be_redeemable
     end
 
     it 'if no global limit is set' do
-      coupon = valid_coupon
+      coupon = create_coupon valid_coupon_params
       coupon.redemption_limit_global = 0
       expect(coupon.reload).to be_redeemable
     end
 
     it 'if no user limit is set' do
-      coupon = valid_coupon
+      coupon = create_coupon valid_coupon_params
       coupon.redemption_limit_user = 0
       expect(coupon.reload).to be_redeemable
     end
 
     it 'if no global limit is set and no user limit is set' do
-      coupon = valid_coupon
+      coupon = create_coupon valid_coupon_params
       coupon.attributes = { redemption_limit_global: nil, redemption_limit_user: nil }
       expect(coupon.reload).to be_redeemable
     end
 
     it 'if there are globally available redemptions' do
-      coupon = valid_coupon
+      coupon = create_coupon valid_coupon_params
       coupon.redemption_limit_global = 5
       expect(coupon.reload).to be_redeemable
     end
 
     it 'if there are available redemptions for user and current user id is defined' do
-      coupon = valid_coupon
+      coupon = create_coupon valid_coupon_params
       user_limit = 3
       user_id = 43
       options = { amount: 200, user_id: user_id }
@@ -213,7 +258,7 @@ describe Coupons::Models::Coupon do
     end
 
     it 'fails if there are available redemptions for user but current user id is undefined' do
-      coupon = valid_coupon
+      coupon = create_coupon valid_coupon_params
       user_limit = 3
       user_id = 43
       options = { amount: 200, user_id: user_id }
@@ -225,7 +270,7 @@ describe Coupons::Models::Coupon do
     end
 
     it 'fails if user availability is exceeded' do
-      coupon = valid_coupon
+      coupon = create_coupon valid_coupon_params
       user_limit = 3
       user_id = 43
       options = { amount: 200, user_id: user_id }
