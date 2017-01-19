@@ -115,7 +115,7 @@ es:
 
       buttons:
         create: 'Crear cupón'
-        edit: 'Modificar cupón'
+        edit: 'Guardar'
         remove_selected: 'Eliminar cupones'
 
       no_description: 'No se capturó una descripción'
