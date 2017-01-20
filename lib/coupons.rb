@@ -12,8 +12,6 @@ module Coupons
   require 'coupons/form_builder'
   require 'coupons/coupon_type'
   require 'coupons/finders/first_available'
-  require 'coupons/finders/smaller_discount'
-  require 'coupons/finders/larger_discount'
   require 'coupons/finders/user_availability'
 
   begin
