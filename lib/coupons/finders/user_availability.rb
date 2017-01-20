@@ -2,9 +2,9 @@ module Coupons
   module Finders
     # Possible return status: found, not_found, limit_exceeded
     UserAvailability = proc do |code, options = {}|
-      coupons = Models::Coupon.where(code: code).select do |coupon|
-        coupon.started? && !coupon.expired?
-      end
+      coupons = Models::Coupon
+                  .where("LOWER(code) = ?", code.try(:downcase))
+                  .select { |coupon| coupon.started? && !coupon.expired? }
 
       selected_coupon = coupons.first
       options[:status] = 'not_found'

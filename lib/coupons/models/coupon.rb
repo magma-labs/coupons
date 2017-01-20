@@ -40,7 +40,7 @@ module Coupons
       validates_numericality_of :redemption_limit_user,
         greater_than_or_equal_to: 0
 
-      validate :validate_dates
+      validate :validate_dates, :validate_code_uniqueness
 
       def apply(options)
         input_amount = BigDecimal("#{options[:amount]}")
@@ -118,6 +118,19 @@ module Coupons
         if valid_from.present? && valid_until.present?
           errors.add(:valid_until, :coupon_valid_until) if valid_until < valid_from
         end
+      end
+
+      def validate_code_uniqueness
+        count = Coupon
+          .where("LOWER(code) = ?", code.try(:downcase))
+          .reject { |record| record.id == id || record.expired? }
+          .select { |record|
+            record.redemption_limit_global.zero? ||
+            record.coupon_redemptions_count < record.redemption_limit_global
+          }
+          .count
+
+        errors.add(:code, :coupon_code_not_unique) if count > 0
       end
     end
   end
