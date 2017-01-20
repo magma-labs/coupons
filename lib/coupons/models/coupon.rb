@@ -121,14 +121,14 @@ module Coupons
       end
 
       def validate_code_uniqueness
-        count = Coupon.where(code: code)
-                  .reject { |record| record.id == id }
-                  .reject(&:expired?)
-                  .select { |record|
-                    record.redemption_limit_global.zero? ||
-                    record.coupon_redemptions_count < record.redemption_limit_global
-                  }
-                  .count
+        count = Coupon
+          .where("LOWER(code) = ?", code.try(:downcase))
+          .reject { |record| record.id == id || record.expired? }
+          .select { |record|
+            record.redemption_limit_global.zero? ||
+            record.coupon_redemptions_count < record.redemption_limit_global
+          }
+          .count
 
         errors.add(:code, :coupon_code_not_unique) if count > 0
       end

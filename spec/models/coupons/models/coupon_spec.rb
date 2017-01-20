@@ -49,11 +49,27 @@ describe Coupons::Models::Coupon do
           expect(coupon2).to be_valid
         end
 
+        it 'fails if the same code but with different letter case is being used' do
+          coupon1 = Coupons::Models::Coupon.new valid_coupon_params
+          coupon2 = Coupons::Models::Coupon.new valid_coupon_params
+          coupon3 = Coupons::Models::Coupon.new valid_coupon_params
+
+          coupon1.code = 'DEEPDISCOUNT'
+          coupon2.code = coupon1.code.downcase
+          coupon3.code = coupon1.code.each_char.map.with_index { |letter, i|
+            (i % 2 == 1) ? letter.downcase : letter
+          }.join('')
+
+          coupon1.save!
+
+          expect(coupon2).to be_invalid
+          expect(coupon3).to be_invalid
+        end
+
         it 'fails if another coupon has same code and its global limit is unlimited' do
           coupon1 = create_coupon valid_coupon_params
           coupon2 = create_coupon valid_coupon_params
           trans_msg = t('activerecord.errors.messages.coupon_code_not_unique')
-
           coupon2.code = coupon1.code
 
           expect(coupon2).to be_invalid
