@@ -123,7 +123,10 @@ module Coupons
       def validate_code_uniqueness
         count = Coupon
           .where("LOWER(code) = ?", code.try(:downcase))
-          .reject { |record| record.id == id || record.expired? }
+          .reject { |record|
+            record.id == id ||
+            (record.valid_until <= valid_from if record.valid_until)
+          }
           .select { |record|
             record.redemption_limit_global.zero? ||
             record.coupon_redemptions_count < record.redemption_limit_global
