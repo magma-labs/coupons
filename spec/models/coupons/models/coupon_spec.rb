@@ -17,10 +17,10 @@ describe Coupons::Models::Coupon do
   context 'fields' do
     describe 'code' do
       it 'is required' do
-        coupon = create_coupon
+        coupon = create_coupon valid_coupon_params
         coupon.code = nil
-        coupon.valid?
 
+        expect(coupon).to be_invalid
         expect(coupon.errors[:code]).not_to be_empty
       end
 
@@ -39,6 +39,28 @@ describe Coupons::Models::Coupon do
           expect(coupon2).to be_valid
         end
 
+        it 'is accepted if another coupon with the same code exists but is expired' do
+          coupon1 = create_coupon valid_coupon_params
+          coupon2 = Coupons::Models::Coupon.new valid_coupon_params
+          coupon3 = Coupons::Models::Coupon.new valid_coupon_params
+
+          coupon1.update redemption_limit_global: 1, coupon_redemptions_count: 0
+          coupon2.assign_attributes(
+            redemption_limit_global: 1,
+            valid_from: coupon1.valid_until + 1.day,
+            valid_until: coupon1.valid_until + 3.days
+          )
+          coupon3.assign_attributes(
+            redemption_limit_global: 1,
+            valid_from: coupon2.valid_until + 1.day,
+            valid_until: coupon2.valid_until + 3.days
+          )
+
+          expect(coupon2).to be_valid
+          coupon2.save!
+          expect(coupon3).to be_valid
+        end
+
         it 'is accepted if another coupon with the same code exists but is depleted' do
           coupon1 = create_coupon valid_coupon_params
           coupon2 = Coupons::Models::Coupon.new valid_coupon_params
@@ -47,6 +69,13 @@ describe Coupons::Models::Coupon do
           coupon2.code = coupon1.code
 
           expect(coupon2).to be_valid
+        end
+
+        it 'fails if the expiration date is the same as today' do
+          coupon = create_coupon valid_coupon_params
+          coupon.update valid_from: Time.now - 1.day, valid_until: Time.now
+
+          expect(coupon.expired?).to be true
         end
 
         it 'fails if the same code but with different letter case is being used' do
@@ -70,7 +99,13 @@ describe Coupons::Models::Coupon do
           coupon1 = create_coupon valid_coupon_params
           coupon2 = create_coupon valid_coupon_params
           trans_msg = t('activerecord.errors.messages.coupon_code_not_unique')
-          coupon2.code = coupon1.code
+
+          coupon1.update valid_until: nil
+          coupon2.update(
+            code: coupon1.code,
+            valid_from: Time.now + 7.days,
+            valid_until: Time.now + 14.days
+          )
 
           expect(coupon2).to be_invalid
           expect(coupon2.errors[:code]).to include(trans_msg)

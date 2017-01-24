@@ -5,7 +5,6 @@ module Coupons
       coupons = Models::Coupon
                   .where("LOWER(code) = ?", code.try(:downcase))
                   .select { |coupon| coupon.started? && !coupon.expired? }
-
       selected_coupon = coupons.first
       options[:status] = 'not_found'
       terminate = false
