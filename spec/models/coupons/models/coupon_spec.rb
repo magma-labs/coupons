@@ -14,253 +14,251 @@ describe Coupons::Models::Coupon do
     }
   end
 
-  context 'fields' do
-    describe 'code' do
-      it 'is required' do
+  describe 'code' do
+    it 'is required' do
+      coupon = create_coupon valid_coupon_params
+      coupon.code = nil
+
+      expect(coupon).to be_invalid
+      expect(coupon.errors[:code]).not_to be_empty
+    end
+
+    it 'generates default value' do
+      coupon = create_coupon
+      expect(coupon.code).to match(/^[A-Z0-9]{6}$/)
+    end
+
+    context 'must be unique among valid coupons' do
+      it 'is accepted if code is unique' do
+        coupon1 = create_coupon valid_coupon_params
+        coupon2 = Coupons::Models::Coupon.new coupon1.attributes
+
+        coupon2.code = coupon1.code.to_i + 1
+
+        expect(coupon2).to be_valid
+      end
+
+      it 'is accepted if another coupon with the same code exists but is expired' do
+        coupon1 = create_coupon valid_coupon_params
+        coupon2 = Coupons::Models::Coupon.new valid_coupon_params
+        coupon3 = Coupons::Models::Coupon.new valid_coupon_params
+
+        coupon1.update redemption_limit_global: 1, coupon_redemptions_count: 0
+        coupon2.assign_attributes(
+          redemption_limit_global: 1,
+          valid_from: coupon1.valid_until + 1.day,
+          valid_until: coupon1.valid_until + 3.days
+        )
+        coupon3.assign_attributes(
+          redemption_limit_global: 1,
+          valid_from: coupon2.valid_until + 1.day,
+          valid_until: coupon2.valid_until + 3.days
+        )
+
+        expect(coupon2).to be_valid
+        coupon2.save!
+        expect(coupon3).to be_valid
+      end
+
+      it 'is accepted if another coupon with the same code exists but is depleted' do
+        coupon1 = create_coupon valid_coupon_params
+        coupon2 = Coupons::Models::Coupon.new valid_coupon_params
+
+        coupon1.update redemption_limit_global: 1, coupon_redemptions_count: 1
+        coupon2.code = coupon1.code
+
+        expect(coupon2).to be_valid
+      end
+
+      it 'fails if the expiration date is the same as today' do
         coupon = create_coupon valid_coupon_params
-        coupon.code = nil
+        coupon.update valid_from: Time.now - 1.day, valid_until: Time.now
 
-        expect(coupon).to be_invalid
-        expect(coupon.errors[:code]).not_to be_empty
+        expect(coupon.expired?).to be true
       end
 
-      it 'generates default coupon code' do
-        coupon = create_coupon
-        expect(coupon.code).to match(/^[A-Z0-9]{6}$/)
+      it 'fails if the same code but with different letter case is being used' do
+        coupon1 = Coupons::Models::Coupon.new valid_coupon_params
+        coupon2 = Coupons::Models::Coupon.new valid_coupon_params
+        coupon3 = Coupons::Models::Coupon.new valid_coupon_params
+
+        coupon1.code = 'DEEPDISCOUNT'
+        coupon2.code = coupon1.code.downcase
+        coupon3.code = coupon1.code.each_char.map.with_index { |letter, i|
+          (i % 2 == 1) ? letter.downcase : letter
+        }.join('')
+
+        coupon1.save!
+
+        expect(coupon2).to be_invalid
+        expect(coupon3).to be_invalid
       end
 
-      context 'must be unique among valid coupons' do
-        it 'is accepted if code is unique' do
-          coupon1 = create_coupon valid_coupon_params
-          coupon2 = Coupons::Models::Coupon.new coupon1.attributes
+      it 'fails if another coupon has same code and its global limit is unlimited' do
+        coupon1 = create_coupon valid_coupon_params
+        coupon2 = create_coupon valid_coupon_params
+        trans_msg = t('activerecord.errors.messages.coupon_code_not_unique')
 
-          coupon2.code = coupon1.code.to_i + 1
+        coupon1.update valid_until: nil
+        coupon2.update(
+          code: coupon1.code,
+          valid_from: Time.now + 7.days,
+          valid_until: Time.now + 14.days
+        )
 
-          expect(coupon2).to be_valid
-        end
+        expect(coupon2).to be_invalid
+        expect(coupon2.errors[:code]).to include(trans_msg)
+      end
 
-        it 'is accepted if another coupon with the same code exists but is expired' do
-          coupon1 = create_coupon valid_coupon_params
-          coupon2 = Coupons::Models::Coupon.new valid_coupon_params
-          coupon3 = Coupons::Models::Coupon.new valid_coupon_params
+      it "fails if another coupon has same code and isn't depeted" do
+        coupon1 = create_coupon valid_coupon_params
+        coupon2 = Coupons::Models::Coupon.new valid_coupon_params
+        trans_msg = t('activerecord.errors.messages.coupon_code_not_unique')
 
-          coupon1.update redemption_limit_global: 1, coupon_redemptions_count: 0
-          coupon2.assign_attributes(
-            redemption_limit_global: 1,
-            valid_from: coupon1.valid_until + 1.day,
-            valid_until: coupon1.valid_until + 3.days
-          )
-          coupon3.assign_attributes(
-            redemption_limit_global: 1,
-            valid_from: coupon2.valid_until + 1.day,
-            valid_until: coupon2.valid_until + 3.days
-          )
+        coupon1.update(redemption_limit_global: 1, coupon_redemptions_count: 0)
+        coupon2.code = coupon1.code
 
-          expect(coupon2).to be_valid
-          coupon2.save!
-          expect(coupon3).to be_valid
-        end
-
-        it 'is accepted if another coupon with the same code exists but is depleted' do
-          coupon1 = create_coupon valid_coupon_params
-          coupon2 = Coupons::Models::Coupon.new valid_coupon_params
-
-          coupon1.update redemption_limit_global: 1, coupon_redemptions_count: 1
-          coupon2.code = coupon1.code
-
-          expect(coupon2).to be_valid
-        end
-
-        it 'fails if the expiration date is the same as today' do
-          coupon = create_coupon valid_coupon_params
-          coupon.update valid_from: Time.now - 1.day, valid_until: Time.now
-
-          expect(coupon.expired?).to be true
-        end
-
-        it 'fails if the same code but with different letter case is being used' do
-          coupon1 = Coupons::Models::Coupon.new valid_coupon_params
-          coupon2 = Coupons::Models::Coupon.new valid_coupon_params
-          coupon3 = Coupons::Models::Coupon.new valid_coupon_params
-
-          coupon1.code = 'DEEPDISCOUNT'
-          coupon2.code = coupon1.code.downcase
-          coupon3.code = coupon1.code.each_char.map.with_index { |letter, i|
-            (i % 2 == 1) ? letter.downcase : letter
-          }.join('')
-
-          coupon1.save!
-
-          expect(coupon2).to be_invalid
-          expect(coupon3).to be_invalid
-        end
-
-        it 'fails if another coupon has same code and its global limit is unlimited' do
-          coupon1 = create_coupon valid_coupon_params
-          coupon2 = create_coupon valid_coupon_params
-          trans_msg = t('activerecord.errors.messages.coupon_code_not_unique')
-
-          coupon1.update valid_until: nil
-          coupon2.update(
-            code: coupon1.code,
-            valid_from: Time.now + 7.days,
-            valid_until: Time.now + 14.days
-          )
-
-          expect(coupon2).to be_invalid
-          expect(coupon2.errors[:code]).to include(trans_msg)
-        end
-
-        it "fails if another coupon has same code and isn't depeted" do
-          coupon1 = create_coupon valid_coupon_params
-          coupon2 = Coupons::Models::Coupon.new valid_coupon_params
-          trans_msg = t('activerecord.errors.messages.coupon_code_not_unique')
-
-          coupon1.update(redemption_limit_global: 1, coupon_redemptions_count: 0)
-          coupon2.code = coupon1.code
-
-          expect(coupon2).to be_invalid
-          expect(coupon2.errors[:code]).to include(trans_msg)
-        end
+        expect(coupon2).to be_invalid
+        expect(coupon2.errors[:code]).to include(trans_msg)
       end
     end
+  end
 
-    describe 'type' do
-      it 'is required' do
-        coupon = create_coupon
-        expect(coupon.errors[:type]).not_to be_empty
-      end
-
-      it 'is valid' do
-        coupon = create_coupon(type: 'invalid')
-        expect(coupon.errors[:type]).not_to be_empty
-      end
+  describe 'type' do
+    it 'is required' do
+      coupon = create_coupon
+      expect(coupon.errors[:type]).not_to be_empty
     end
 
-    describe 'valid_from and valid_until' do
-      it 'requires valid expiration date' do
-        coupon = create_coupon(valid_until: 'invalid')
-        expect(coupon.errors[:valid_until]).not_to be_empty
-      end
+    it 'is valid' do
+      coupon = create_coupon(type: 'invalid')
+      expect(coupon.errors[:type]).not_to be_empty
+    end
+  end
 
-      it 'accepts valid expiration date' do
-        coupon = create_coupon(valid_until: Date.current)
-        expect(coupon.errors[:valid_until]).to be_empty
-
-        coupon = create_coupon(valid_until: DateTime.current)
-        expect(coupon.errors[:valid_until]).to be_empty
-
-        coupon = create_coupon(valid_until: Time.current)
-        expect(coupon.errors[:valid_until]).to be_empty
-
-        Time.zone = 'UTC'
-        coupon = create_coupon(valid_until: Time.zone.now)
-        expect(coupon.errors[:valid_until]).to be_empty
-      end
-
-      it 'rejects expiration date' do
-        coupon = create_coupon(valid_until: 1.day.ago)
-        expect(coupon.errors[:valid_until]).not_to be_empty
-      end
-
-      it 'sets valid from to current date' do
-        coupon = create_coupon
-        expect(coupon.valid_from).to eq(Date.current)
-      end
-
-      it 'requires valid until to be greater than or equal to valid from' do
-        coupon = create_coupon(valid_from: 1.day.from_now, valid_until: 1.day.ago)
-        expect(coupon.errors[:valid_until]).not_to be_empty
-      end
-
-      it 'accepts valid until equal to valid from' do
-        coupon = create_coupon(valid_from: Date.current, valid_until: Date.current)
-        expect(coupon.errors[:valid_until]).to be_empty
-      end
-
-      it 'accepts valid until greater than valid from' do
-        coupon = create_coupon(valid_from: 1.day.ago, valid_until: Date.current)
-        expect(coupon.errors[:valid_until]).to be_empty
-      end
-
-      it 'accepts blank valid until' do
-        coupon = create_coupon(valid_from: 1.day.ago)
-        expect(coupon.errors[:valid_until]).to be_empty
-      end
+  describe 'valid_from and valid_until' do
+    it 'requires valid expiration date' do
+      coupon = create_coupon(valid_until: 'invalid')
+      expect(coupon.errors[:valid_until]).not_to be_empty
     end
 
-    describe 'amount' do
-      it 'requires valid range for percentage based coupons' do
-        coupon = create_coupon(amount: -1, type: 'percentage')
-        expect(coupon.errors[:amount]).not_to be_empty
+    it 'accepts valid expiration date' do
+      coupon = create_coupon(valid_until: Date.current)
+      expect(coupon.errors[:valid_until]).to be_empty
 
-        coupon = create_coupon(amount: 101, type: 'percentage')
-        expect(coupon.errors[:amount]).not_to be_empty
+      coupon = create_coupon(valid_until: DateTime.current)
+      expect(coupon.errors[:valid_until]).to be_empty
 
-        coupon = create_coupon(amount: 10.5, type: 'percentage')
-        expect(coupon.errors[:amount]).not_to be_empty
-      end
+      coupon = create_coupon(valid_until: Time.current)
+      expect(coupon.errors[:valid_until]).to be_empty
 
-      it 'accepts amount for percentage based coupons' do
-        coupon = create_coupon(amount: 0, type: 'percentage')
-        expect(coupon.errors[:amount]).to be_empty
-
-        coupon = create_coupon(amount: 100, type: 'percentage')
-        expect(coupon.errors[:amount]).to be_empty
-
-        coupon = create_coupon(amount: 50, type: 'percentage')
-        expect(coupon.errors[:amount]).to be_empty
-      end
-
-      it 'requires amount to be a positive number for amount based coupons' do
-        coupon = create_coupon(amount: -1, type: 'amount')
-        expect(coupon.errors[:amount]).not_to be_empty
-      end
-
-      it 'accepts non-zero amount for amount based coupons' do
-        coupon = create_coupon(amount: 1000, type: 'amount')
-        expect(coupon.errors[:amount]).to be_empty
-      end
+      Time.zone = 'UTC'
+      coupon = create_coupon(valid_until: Time.zone.now)
+      expect(coupon.errors[:valid_until]).to be_empty
     end
 
-    describe 'redemption_limit_global' do
-      it 'requires non-zero global redemption limit' do
-        coupon = create_coupon(redemption_limit_global: -1)
-        expect(coupon.errors[:redemption_limit_global]).not_to be_empty
-
-        coupon = create_coupon(redemption_limit_global: 0)
-        expect(coupon.errors[:redemption_limit_global]).to be_empty
-
-        coupon = create_coupon(redemption_limit_global: 100)
-        expect(coupon.errors[:redemption_limit_global]).to be_empty
-      end
+    it 'rejects expiration date' do
+      coupon = create_coupon(valid_until: 1.day.ago)
+      expect(coupon.errors[:valid_until]).not_to be_empty
     end
 
-    describe 'redemption_limit_user' do
-      it 'requires non-zero user redemption limit' do
-        coupon = create_coupon(redemption_limit_user: -1)
-        expect(coupon.errors[:redemption_limit_user]).not_to be_empty
-
-        coupon = create_coupon(redemption_limit_user: 0)
-        expect(coupon.errors[:redemption_limit_user]).to be_empty
-
-        coupon = create_coupon(redemption_limit_user: 100)
-        expect(coupon.errors[:redemption_limit_user]).to be_empty
-      end
+    it 'sets valid from to current date' do
+      coupon = create_coupon
+      expect(coupon.valid_from).to eq(Date.current)
     end
 
-    describe 'attachments' do
-      it 'sets default attachments object for new records' do
-        coupon = Coupons::Models::Coupon.new
-        expect(coupon.attachments).to eq({})
-      end
+    it 'requires valid until to be greater than or equal to valid from' do
+      coupon = create_coupon(valid_from: 1.day.from_now, valid_until: 1.day.ago)
+      expect(coupon.errors[:valid_until]).not_to be_empty
+    end
 
-      it 'saves default attachments object' do
-        coupon = create_coupon(amount: 10, type: 'amount')
-        coupon.reload
+    it 'accepts valid until equal to valid from' do
+      coupon = create_coupon(valid_from: Date.current, valid_until: Date.current)
+      expect(coupon.errors[:valid_until]).to be_empty
+    end
 
-        expect(coupon.attachments).to eq({})
-      end
+    it 'accepts valid until greater than valid from' do
+      coupon = create_coupon(valid_from: 1.day.ago, valid_until: Date.current)
+      expect(coupon.errors[:valid_until]).to be_empty
+    end
+
+    it 'accepts blank valid until' do
+      coupon = create_coupon(valid_from: 1.day.ago)
+      expect(coupon.errors[:valid_until]).to be_empty
+    end
+  end
+
+  describe 'amount' do
+    it 'requires valid range for percentage based coupons' do
+      coupon = create_coupon(amount: -1, type: 'percentage')
+      expect(coupon.errors[:amount]).not_to be_empty
+
+      coupon = create_coupon(amount: 101, type: 'percentage')
+      expect(coupon.errors[:amount]).not_to be_empty
+
+      coupon = create_coupon(amount: 10.5, type: 'percentage')
+      expect(coupon.errors[:amount]).not_to be_empty
+    end
+
+    it 'accepts amount for percentage based coupons' do
+      coupon = create_coupon(amount: 0, type: 'percentage')
+      expect(coupon.errors[:amount]).to be_empty
+
+      coupon = create_coupon(amount: 100, type: 'percentage')
+      expect(coupon.errors[:amount]).to be_empty
+
+      coupon = create_coupon(amount: 50, type: 'percentage')
+      expect(coupon.errors[:amount]).to be_empty
+    end
+
+    it 'requires amount to be a positive number for amount based coupons' do
+      coupon = create_coupon(amount: -1, type: 'amount')
+      expect(coupon.errors[:amount]).not_to be_empty
+    end
+
+    it 'accepts non-zero amount for amount based coupons' do
+      coupon = create_coupon(amount: 1000, type: 'amount')
+      expect(coupon.errors[:amount]).to be_empty
+    end
+  end
+
+  describe 'redemption_limit_global' do
+    it 'requires non-zero global redemption limit' do
+      coupon = create_coupon(redemption_limit_global: -1)
+      expect(coupon.errors[:redemption_limit_global]).not_to be_empty
+
+      coupon = create_coupon(redemption_limit_global: 0)
+      expect(coupon.errors[:redemption_limit_global]).to be_empty
+
+      coupon = create_coupon(redemption_limit_global: 100)
+      expect(coupon.errors[:redemption_limit_global]).to be_empty
+    end
+  end
+
+  describe 'redemption_limit_user' do
+    it 'requires non-zero user redemption limit' do
+      coupon = create_coupon(redemption_limit_user: -1)
+      expect(coupon.errors[:redemption_limit_user]).not_to be_empty
+
+      coupon = create_coupon(redemption_limit_user: 0)
+      expect(coupon.errors[:redemption_limit_user]).to be_empty
+
+      coupon = create_coupon(redemption_limit_user: 100)
+      expect(coupon.errors[:redemption_limit_user]).to be_empty
+    end
+  end
+
+  describe 'attachments' do
+    it 'sets default attachments object for new records' do
+      coupon = Coupons::Models::Coupon.new
+      expect(coupon.attachments).to eq({})
+    end
+
+    it 'saves default attachments object' do
+      coupon = create_coupon(amount: 10, type: 'amount')
+      coupon.reload
+
+      expect(coupon.attachments).to eq({})
     end
   end
 

@@ -16,13 +16,13 @@
 # Uncomment the following lines to make the configuration take effect.
 
 PreCommit:
- RuboCop:
-   enabled: true
-   on_warn: fail # Treat all warnings as failures
+  RuboCop:
+    enabled: true
+    on_warn: fail # Treat all warnings as failures
 
- TrailingWhitespace:
-   enabled: true
-   exclude:
+  TrailingWhitespace:
+    enabled: true
+    exclude:
      - '**/db/structure.sql' # Ignore trailing whitespace in generated files
 
 PostCheckout:
