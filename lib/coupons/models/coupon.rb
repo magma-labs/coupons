@@ -19,39 +19,41 @@ module Coupons
       has_many :redemptions, class_name: 'Coupons::Models::CouponRedemption'
 
       validates_presence_of :code, :valid_from
-      validates_inclusion_of :type, in: %w[percentage amount]
+      validates_inclusion_of :type, in: %w(percentage amount)
 
       serialize :attachments, GlobalidSerializer
 
       validates_numericality_of :amount,
-        greater_than_or_equal_to: 0,
-        less_than_or_equal_to: 100,
-        only_integer: true,
-        if: :percentage_based?
+                                greater_than_or_equal_to: 0,
+                                less_than_or_equal_to: 100,
+                                only_integer: true,
+                                if: :percentage_based?
 
       validates_numericality_of :amount,
-        greater_than_or_equal_to: 0,
-        only_integer: true,
-        if: :amount_based?
+                                greater_than_or_equal_to: 0,
+                                only_integer: true,
+                                if: :amount_based?
 
       validates_numericality_of :redemption_limit_global,
-        greater_than_or_equal_to: 0
+                                greater_than_or_equal_to: 0
 
       validates_numericality_of :redemption_limit_user,
-        greater_than_or_equal_to: 0
+                                greater_than_or_equal_to: 0
 
       validate :validate_dates, :validate_code_uniqueness
 
       def apply(options)
-        input_amount = BigDecimal("#{options[:amount]}")
-        discount = BigDecimal(percentage_based? ? percentage_discount(options[:amount]) : amount)
+        input_amount = BigDecimal(options[:amount].to_s)
+        discount = BigDecimal(
+          percentage_based? ? percentage_discount(options[:amount]) : amount
+        )
         total = [0, input_amount - discount].max
 
         options = options.merge(total: total, discount: discount)
 
-        options = Coupons.configuration.resolvers.reduce(options) do |options, resolver|
-          resolver.resolve(self, options)
-        end
+        options =
+          Coupons.configuration.resolvers
+            .reduce(options) { |options, resolver| resolver.resolve(self, options) }
 
         options
       end
@@ -77,7 +79,7 @@ module Coupons
 
         user_redeemed = redemptions.where(user_id: user_id).count
 
-        return user_redeemed < redemption_limit_user
+        user_redeemed < redemption_limit_user
       end
 
       def started?
@@ -105,6 +107,15 @@ module Coupons
 
       private
 
+      def datetime_overlap?(coupon)
+        cvf = coupon.valid_from
+        cvu = coupon.valid_until
+        this_starts_after_that = valid_until && cvf ? valid_until <= cvf : false
+        that_ends_before_this = valid_from && cvu ? valid_from >= cvu : false
+
+        !(that_ends_before_this || this_starts_after_that)
+      end
+
       def percentage_discount(input_amount)
         BigDecimal("#{input_amount}") * (BigDecimal("#{amount}") / 100)
       end
@@ -121,16 +132,12 @@ module Coupons
       end
 
       def validate_code_uniqueness
-        count = Coupon
-          .where("LOWER(code) = ?", code.try(:downcase))
-          .reject { |record|
-            record.id == id ||
-            (record.valid_until <= valid_from if record.valid_until)
-          }
-          .select { |record|
-            record.redemption_limit_global.zero? ||
-            record.coupon_redemptions_count < record.redemption_limit_global
-          }
+        query =
+          "LOWER(code) = ? AND " +
+          "(redemption_limit_global = 0 OR coupon_redemptions_count < redemption_limit_global)"
+        count =
+          Coupon.where(query, code.try(:downcase)).where.not(id: id)
+          .select { |coupon| datetime_overlap?(coupon) }
           .count
 
         errors.add(:code, :coupon_code_not_unique) if count > 0
