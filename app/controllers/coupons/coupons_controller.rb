@@ -106,8 +106,10 @@ class Coupons::CouponsController < Coupons::ApplicationController
         :redemption_limit_global,
         :redemption_limit_user,
         :description,
-        :valid_from,
-        :valid_until,
+        :valid_from_date,
+        :valid_until_date,
+        :valid_from_time,
+        :valid_until_time,
         :amount,
         :type
       )

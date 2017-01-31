@@ -10,7 +10,7 @@ module Coupons
       # Set default values.
       after_initialize do
         self.code ||= Coupons.configuration.generator.call
-        self.valid_from ||= Date.current
+        self.valid_from_date ||= Date.current
 
         attachments_will_change!
         write_attribute :attachments, {} if attachments.empty?
@@ -18,7 +18,7 @@ module Coupons
 
       has_many :redemptions, class_name: 'Coupons::Models::CouponRedemption'
 
-      validates_presence_of :code, :valid_from
+      validates_presence_of :code, :valid_from_date
       validates_inclusion_of :type, in: %w(percentage amount)
 
       serialize :attachments, GlobalidSerializer
@@ -40,7 +40,7 @@ module Coupons
       validates_numericality_of :redemption_limit_user,
                                 greater_than_or_equal_to: 0
 
-      validate :validate_dates, :validate_code_uniqueness
+      validate :validate_dates, :validate_times, :validate_code_uniqueness
 
       def apply(options)
         input_amount = BigDecimal(options[:amount].to_s)
@@ -63,7 +63,14 @@ module Coupons
       end
 
       def expired?
-        valid_until && valid_until <= Date.current
+        valid_until_date && valid_until_date <= Date.current
+      end
+
+      def valid_times?
+        timedate = Time.now
+        current_time = Time.utc 2000, 1, 1, timedate.hour, timedate.min
+
+        current_time >= valid_from_time && current_time < valid_until_time
       end
 
       def available_global_redemptions?
@@ -83,14 +90,13 @@ module Coupons
       end
 
       def started?
-        valid_from <= Date.current
+        valid_from_date <= Time.now
       end
 
       def redeemable?(user_id = nil)
-        !expired? &&
+        started? && !expired? && valid_times? &&
           available_global_redemptions? &&
-          available_user_redemptions?(user_id) &&
-          started?
+          available_user_redemptions?(user_id)
       end
 
       def to_partial_path
@@ -107,13 +113,34 @@ module Coupons
 
       private
 
-      def datetime_overlap?(coupon)
-        cvf = coupon.valid_from
-        cvu = coupon.valid_until
-        this_starts_after_that = valid_until && cvf ? valid_until <= cvf : false
-        that_ends_before_this = valid_from && cvu ? valid_from >= cvu : false
+      def ends_before_this_starts?(self_valid_from, coupon_valid_until)
+        if self_valid_from && coupon_valid_until
+          self_valid_from >= coupon_valid_until
+        else
+          false
+        end
+      end
 
-        !(that_ends_before_this || this_starts_after_that)
+      def starts_after_this_ends?(self_valid_until, coupon_valid_from)
+        if self_valid_until && coupon_valid_from
+          self_valid_until <= coupon_valid_from
+        else
+          false
+        end
+      end
+
+      def overlaps?(coupon)
+        dates_overlap = !(
+          ends_before_this_starts?(valid_from_date, coupon.valid_until_date) ||
+          starts_after_this_ends?(valid_until_date, coupon.valid_from_date)
+        )
+
+        times_overlap = !(
+          ends_before_this_starts?(valid_from_time, coupon.valid_until_time) ||
+          starts_after_this_ends?(valid_until_time, coupon.valid_from_time)
+        )
+
+        dates_overlap ? (dates_overlap && times_overlap) : false
       end
 
       def percentage_discount(input_amount)
@@ -121,14 +148,22 @@ module Coupons
       end
 
       def validate_dates
-        if valid_until_before_type_cast.present?
-          errors.add(:valid_until, :invalid) unless valid_until.kind_of?(Date)
-          errors.add(:valid_until, :coupon_already_expired) if valid_until? && valid_until < Date.current
+        if valid_until_date_before_type_cast.present?
+          errors.add(:valid_until_date, :invalid) unless valid_until_date.kind_of?(Date)
+          errors.add(:valid_until_date, :coupon_already_expired) if valid_until_date? && valid_until_date < Date.current
         end
 
-        if valid_from.present? && valid_until.present?
-          errors.add(:valid_until, :coupon_valid_until) if valid_until < valid_from
+        if valid_from_date.present? && valid_until_date.present?
+          errors.add(:valid_until_date, :coupon_valid_until) if valid_until_date < valid_from_date
         end
+      end
+
+      def validate_times
+        is_valid =
+          Time === valid_from_time && Time === valid_until_time &&
+          valid_from_time < valid_until_time
+
+        errors.add(:valid_until_time, :coupon_valid_until_time) unless is_valid
       end
 
       def validate_code_uniqueness
@@ -137,7 +172,7 @@ module Coupons
           "(redemption_limit_global = 0 OR coupon_redemptions_count < redemption_limit_global)"
         count =
           Coupon.where(query, code.try(:downcase)).where.not(id: id)
-          .select { |coupon| datetime_overlap?(coupon) }
+          .select { |coupon| overlaps?(coupon) }
           .count
 
         errors.add(:code, :coupon_code_not_unique) if count > 0

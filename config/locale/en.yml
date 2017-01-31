@@ -126,5 +126,6 @@ en:
     errors:
       messages:
         coupon_already_expired: must be equal to or greater than today
-        coupon_valid_until: must be greater than or equal to valid from date
         coupon_code_not_unique: already exists among currently valid, non-depleted coupons
+        coupon_valid_until_date: must be greater than or equal to valid from date
+        coupon_valid_until_time: must be greater or equal to the start time

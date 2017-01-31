@@ -26,8 +26,8 @@ module Coupons::ApplicationHelper
   end
 
   def expiration(coupon)
-    if coupon.valid_until?
-      l(coupon.valid_until, format: :coupon)
+    if coupon.valid_until_date?
+      l(coupon.valid_until_date, format: :coupon)
     else
       content_tag :span, t('coupons.coupon.dont_expire'), class: 'mute'
     end

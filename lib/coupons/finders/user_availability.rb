@@ -4,7 +4,7 @@ module Coupons
     UserAvailability = proc do |code, options = {}|
       coupons = Models::Coupon
                   .where("LOWER(code) = ?", code.try(:downcase))
-                  .select { |coupon| coupon.started? && !coupon.expired? }
+                  .select { |coupon| coupon.redeemable?(options[:user_id]) }
       selected_coupon = coupons.first
       options[:status] = 'not_found'
       terminate = false
