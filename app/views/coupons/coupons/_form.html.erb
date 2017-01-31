@@ -4,7 +4,7 @@
   <div class="form-group">
     <div class="form-label">
       <%= form.label :code %>
-      <%= form.hint  :code %>
+      <%= form.hint :code %>
     </div>
 
     <div class="form-control">
@@ -16,7 +16,7 @@
   <div class="form-group">
     <div class="form-label">
       <%= form.label :description %>
-      <%= form.hint  :description, 'foo' %>
+      <%= form.hint :description, 'foo' %>
     </div>
 
     <div class="form-control">
@@ -27,20 +27,32 @@
 
   <div class="form-group">
     <div class="form-label">
-      <%= form.label :redemption_limit %>
-      <%= form.hint  :redemption_limit %>
+      <%= form.label :redemption_limit_global %>
+      <%= form.hint :redemption_limit_global %>
     </div>
 
     <div class="form-control">
-      <%= form.number_field :redemption_limit, min: 0 %>
-      <%= form.error_for :redemption_limit %>
+      <%= form.number_field :redemption_limit_global, min: 0 %>
+      <%= form.error_for :redemption_limit_global %>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <div class="form-label">
+      <%= form.label :redemption_limit_user %>
+      <%= form.hint :redemption_limit_user %>
+    </div>
+
+    <div class="form-control">
+      <%= form.number_field :redemption_limit_user, min: 0 %>
+      <%= form.error_for :redemption_limit_user %>
     </div>
   </div>
 
   <div class="form-group">
     <div class="form-label">
       <%= form.label :type %>
-      <%= form.hint  :type %>
+      <%= form.hint :type %>
     </div>
 
     <div class="form-control">
@@ -52,7 +64,7 @@
   <div class="form-group">
     <div class="form-label">
       <%= form.label :amount %>
-      <%= form.hint  :amount %>
+      <%= form.hint :amount %>
     </div>
 
     <div class="form-control">
@@ -64,7 +76,7 @@
   <div class="form-group">
     <div class="form-label">
       <%= form.label :valid_from %>
-      <%= form.hint  :valid_from %>
+      <%= form.hint :valid_from %>
     </div>
 
     <div class="form-control">
@@ -76,17 +88,19 @@
   <div class="form-group">
     <div class="form-label">
       <%= form.label :valid_until %>
-      <%= form.hint  :valid_until %>
+      <%= form.hint :valid_until %>
     </div>
 
     <div class="form-control">
-      <%= form.date_select :valid_until, include_blank: true, start_year: Date.current.year, end_year: Date.current.year + 10 %>
+      <%= form.date_select :valid_until, include_blank: true,
+        start_year: Date.current.year, end_year: Date.current.year + 10 %>
       <%= form.error_for :valid_until %>
     </div>
   </div>
 
   <div class="form-actions form-group">
-    <%= form.submit t(form.object.persisted? ? 'edit' : 'create', scope: 'coupons.coupon.buttons'), class: 'button rounded green' %>
+    <%= form.submit t(form.object.persisted? ? 'edit' : 'create',
+      scope: 'coupons.coupon.buttons'), class: 'button rounded green' %>
   </div>
 
 <% end %>

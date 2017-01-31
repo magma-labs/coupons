@@ -30,6 +30,6 @@ describe 'Authorization' do
 
     get '/coupons'
     expect(response.code).to eq('403')
-    expect(response.body).to eq('Coupouns: not enabled in production environments')
+    expect(response.body).to eq('Coupons: not enabled in production environments')
   end
 end

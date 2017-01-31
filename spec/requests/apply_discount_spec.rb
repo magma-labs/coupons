@@ -4,7 +4,7 @@ describe 'Apply discount' do
   let(:coupon) { create_coupon(amount: 15, type: 'amount') }
 
   it 'applies discount' do
-    get '/coupons/apply', coupon: coupon.code, amount: '100.0'
+    get '/coupons/apply', coupon_code: coupon.code, amount: '100.0'
 
     expect(response.code).to eq('200')
     expect(response.content_type).to eq('application/json')
@@ -16,7 +16,7 @@ describe 'Apply discount' do
   end
 
   it 'returns response for invalid coupon' do
-    get '/coupons/apply', coupon: 'invalid', amount: '100.0'
+    get '/coupons/apply', coupon_code: 'invalid', amount: '100.0'
 
     expect(response.code).to eq('200')
     expect(response.content_type).to eq('application/json')
@@ -28,7 +28,7 @@ describe 'Apply discount' do
   end
 
   it 'returns response for missing amount' do
-    get '/coupons/apply', coupon: coupon.code
+    get '/coupons/apply', coupon_code: coupon.code
 
     expect(response.code).to eq('200')
     expect(response.content_type).to eq('application/json')
@@ -40,7 +40,7 @@ describe 'Apply discount' do
   end
 
   it 'returns response for invalid amount' do
-    get '/coupons/apply', coupon: coupon.code, amount: 'invalid'
+    get '/coupons/apply', coupon_code: coupon.code, amount: 'invalid'
 
     expect(response.code).to eq('200')
     expect(response.content_type).to eq('application/json')
