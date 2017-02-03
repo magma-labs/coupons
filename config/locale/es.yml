@@ -125,5 +125,6 @@ es:
     errors:
       messages:
         coupon_already_expired: debe ser igual o mayor a hoy
-        coupon_valid_until: debe ser mayor a o igual la fecha de inicio de vigencia
         coupon_code_not_unique: ya existe entre los cupones vigentes y no agotados
+        coupon_valid_until_date: debe ser mayor a o igual la fecha de inicio de vigencia
+        coupon_valid_until_time: debe ser igual o mayor a la hora de inicio

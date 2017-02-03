@@ -4,14 +4,20 @@ describe Coupons::Models::Coupon do
 
   let(:valid_coupon_params) do
     {
-      code: '556677',
       amount: 50,
-      type: 'amount',
+      code: '556677',
       redemption_limit_global: 0,
       redemption_limit_user: 0,
-      valid_from: 2.days.ago,
-      valid_until: 3.days.from_now
+      type: 'amount',
+      valid_from_date: Date.current,
+      valid_until_date: 3.days.from_now,
+      valid_from_time: '00:00:00',
+      valid_until_time: '24:00:00'
     }
+  end
+
+  def time_to_str(hour = 0, min = 0, sec = 0)
+    "#{'%02d' % hour}:#{'%02d' % min}:#{'%02d' % sec}"
   end
 
   describe 'code' do
@@ -38,7 +44,7 @@ describe Coupons::Models::Coupon do
         expect(coupon2).to be_valid
       end
 
-      it 'is accepted if another coupon with the same code exists but is expired' do
+      it 'is accepted if other coupons with the same code are expired' do
         coupon1 = create_coupon valid_coupon_params
         coupon2 = Coupons::Models::Coupon.new valid_coupon_params
         coupon3 = Coupons::Models::Coupon.new valid_coupon_params
@@ -46,13 +52,13 @@ describe Coupons::Models::Coupon do
         coupon1.update redemption_limit_global: 1, coupon_redemptions_count: 0
         coupon2.assign_attributes(
           redemption_limit_global: 1,
-          valid_from: coupon1.valid_until + 1.day,
-          valid_until: coupon1.valid_until + 3.days
+          valid_from_date: coupon1.valid_until_date + 1.day,
+          valid_until_date: coupon1.valid_until_date + 3.days
         )
         coupon3.assign_attributes(
           redemption_limit_global: 1,
-          valid_from: coupon2.valid_until + 1.day,
-          valid_until: coupon2.valid_until + 3.days
+          valid_from_date: coupon2.valid_until_date + 1.day,
+          valid_until_date: coupon2.valid_until_date + 3.days
         )
 
         expect(coupon2).to be_valid
@@ -72,7 +78,7 @@ describe Coupons::Models::Coupon do
 
       it 'fails if the expiration date is the same as today' do
         coupon = create_coupon valid_coupon_params
-        coupon.update valid_from: Time.now - 1.day, valid_until: Time.now
+        coupon.update valid_from_date: Time.now - 1.day, valid_until_date: Time.now
 
         expect(coupon.expired?).to be true
       end
@@ -99,11 +105,11 @@ describe Coupons::Models::Coupon do
         coupon2 = create_coupon valid_coupon_params
         trans_msg = t('activerecord.errors.messages.coupon_code_not_unique')
 
-        coupon1.update valid_until: nil
+        coupon1.update valid_until_date: nil
         coupon2.update(
           code: coupon1.code,
-          valid_from: Time.now + 7.days,
-          valid_until: Time.now + 14.days
+          valid_from_date: Time.now + 7.days,
+          valid_until_date: Time.now + 14.days
         )
 
         expect(coupon2).to be_invalid
@@ -136,55 +142,144 @@ describe Coupons::Models::Coupon do
     end
   end
 
-  describe 'valid_from and valid_until' do
+  describe 'amount' do
+    it 'requires valid range for percentage based coupons' do
+      coupon = create_coupon(amount: -1, type: 'percentage')
+      expect(coupon.errors[:amount]).not_to be_empty
+
+      coupon = create_coupon(amount: 101, type: 'percentage')
+      expect(coupon.errors[:amount]).not_to be_empty
+
+      coupon = create_coupon(amount: 10.5, type: 'percentage')
+      expect(coupon.errors[:amount]).not_to be_empty
+    end
+
+    it 'accepts amount for percentage based coupons' do
+      coupon = create_coupon(amount: 0, type: 'percentage')
+      expect(coupon.errors[:amount]).to be_empty
+
+      coupon = create_coupon(amount: 100, type: 'percentage')
+      expect(coupon.errors[:amount]).to be_empty
+
+      coupon = create_coupon(amount: 50, type: 'percentage')
+      expect(coupon.errors[:amount]).to be_empty
+    end
+
+    it 'requires amount to be a positive number for amount based coupons' do
+      coupon = create_coupon(amount: -1, type: 'amount')
+      expect(coupon.errors[:amount]).not_to be_empty
+    end
+
+    it 'accepts non-zero amount for amount based coupons' do
+      coupon = create_coupon(amount: 1000, type: 'amount')
+      expect(coupon.errors[:amount]).to be_empty
+    end
+  end
+
+  describe 'valid_from_date and valid_until_date' do
     it 'requires valid expiration date' do
-      coupon = create_coupon(valid_until: 'invalid')
-      expect(coupon.errors[:valid_until]).not_to be_empty
+      coupon = create_coupon(valid_until_date: 'invalid')
+      expect(coupon.errors[:valid_until_date]).not_to be_empty
     end
 
     it 'accepts valid expiration date' do
-      coupon = create_coupon(valid_until: Date.current)
-      expect(coupon.errors[:valid_until]).to be_empty
+      coupon = create_coupon(valid_until_date: Date.current)
+      expect(coupon.errors[:valid_until_date]).to be_empty
 
-      coupon = create_coupon(valid_until: DateTime.current)
-      expect(coupon.errors[:valid_until]).to be_empty
+      coupon = create_coupon(valid_until_date: DateTime.current)
+      expect(coupon.errors[:valid_until_date]).to be_empty
 
-      coupon = create_coupon(valid_until: Time.current)
-      expect(coupon.errors[:valid_until]).to be_empty
+      coupon = create_coupon(valid_until_date: Time.current)
+      expect(coupon.errors[:valid_until_date]).to be_empty
 
       Time.zone = 'UTC'
-      coupon = create_coupon(valid_until: Time.zone.now)
-      expect(coupon.errors[:valid_until]).to be_empty
+      coupon = create_coupon(valid_until_date: Time.zone.now)
+      expect(coupon.errors[:valid_until_date]).to be_empty
     end
 
     it 'rejects expiration date' do
-      coupon = create_coupon(valid_until: 1.day.ago)
-      expect(coupon.errors[:valid_until]).not_to be_empty
+      coupon = create_coupon(valid_until_date: 1.day.ago)
+      expect(coupon.errors[:valid_until_date]).not_to be_empty
     end
 
     it 'sets valid from to current date' do
       coupon = create_coupon
-      expect(coupon.valid_from).to eq(Date.current)
+      expect(coupon.valid_from_date).to eq(Date.current)
     end
 
     it 'requires valid until to be greater than or equal to valid from' do
-      coupon = create_coupon(valid_from: 1.day.from_now, valid_until: 1.day.ago)
-      expect(coupon.errors[:valid_until]).not_to be_empty
+      coupon = create_coupon(valid_from_date: 1.day.from_now, valid_until_date: 1.day.ago)
+      expect(coupon.errors[:valid_until_date]).not_to be_empty
     end
 
     it 'accepts valid until equal to valid from' do
-      coupon = create_coupon(valid_from: Date.current, valid_until: Date.current)
-      expect(coupon.errors[:valid_until]).to be_empty
+      coupon = create_coupon(valid_from_date: Date.current, valid_until_date: Date.current)
+      expect(coupon.errors[:valid_until_date]).to be_empty
     end
 
     it 'accepts valid until greater than valid from' do
-      coupon = create_coupon(valid_from: 1.day.ago, valid_until: Date.current)
-      expect(coupon.errors[:valid_until]).to be_empty
+      coupon = create_coupon(valid_from_date: 1.day.ago, valid_until_date: Date.current)
+      expect(coupon.errors[:valid_until_date]).to be_empty
     end
 
     it 'accepts blank valid until' do
-      coupon = create_coupon(valid_from: 1.day.ago)
-      expect(coupon.errors[:valid_until]).to be_empty
+      coupon = create_coupon(valid_from_date: 1.day.ago)
+      expect(coupon.errors[:valid_until_date]).to be_empty
+    end
+  end
+
+  describe 'valid_from_time and valid_until_time' do
+    let(:time_zero) { Time.utc 2000, 1, 1 }
+
+    it "default to range '00:00:00' to '24:00:00" do
+      start_time = time_zero
+      end_time = time_zero + 24.hours
+      coupon_params = valid_coupon_params
+      coupon_params.delete :valid_from_time
+      coupon_params.delete :valid_until_time
+      coupon = Coupons::Models::Coupon.new valid_coupon_params
+
+      coupon.save!
+
+      expect(coupon.reload).to be_valid
+      expect(coupon.valid_from_time).to eq start_time
+      expect(coupon.valid_until_time).to eq end_time
+    end
+
+    it 'accept valid start to end minutes' do
+      coupon = Coupons::Models::Coupon.new valid_coupon_params
+
+      coupon.assign_attributes valid_from_time: time_zero, valid_until_time: time_zero + 24.hours
+      expect(coupon).to be_valid
+
+      coupon.assign_attributes valid_from_time: '1:00:00', valid_until_time: '3:00:00'
+      expect(coupon).to be_valid
+    end
+
+    it 'rejects invalid start to end minutes' do
+      start_min = time_zero
+      end_min = start_min + 2.hours
+      coupon = Coupons::Models::Coupon.new valid_coupon_params
+
+      coupon.assign_attributes valid_from_time: end_min, valid_until_time: start_min
+      expect(coupon).to be_invalid
+      expect(coupon.errors[:valid_until_time])
+        .to include t('activerecord.errors.messages.coupon_valid_until_time')
+    end
+
+    it 'rejects non-Time objects' do
+      test_time = '10:00:00'
+      coupon = Coupons::Models::Coupon.new valid_coupon_params
+
+      coupon.assign_attributes valid_from_time: Object.new, valid_until_time: test_time
+      expect(coupon).to be_invalid
+      expect(coupon.errors[:valid_until_time])
+        .to include t('activerecord.errors.messages.coupon_valid_until_time')
+
+      coupon.assign_attributes valid_from_time: test_time, valid_until_time: Object.new
+      expect(coupon).to be_invalid
+      expect(coupon.errors[:valid_until_time])
+        .to include t('activerecord.errors.messages.coupon_valid_until_time')
     end
   end
 
@@ -262,12 +357,102 @@ describe Coupons::Models::Coupon do
     end
   end
 
-  describe '#redeemable?' do
+  describe '#expired?' do
+    it "returns false if valid date range" do
+      coupon = Coupons::Models::Coupon.new valid_coupon_params
 
+      coupon.assign_attributes valid_from_date: Time.now, valid_until_date: 2.days.from_now
+      coupon.save!
+
+      expect(coupon).not_to be_expired
+    end
+
+    it "returns true if date range is in the past" do
+      mock_date = 3.days.from_now
+      future_date = Date.new mock_date.year, mock_date.month, mock_date.day
+      coupon = Coupons::Models::Coupon.new valid_coupon_params
+
+      coupon.assign_attributes valid_from_date: Time.now, valid_until_date: mock_date - 1.day
+      coupon.save!
+
+      allow(Date).to receive(:current) { future_date }
+      expect(coupon).to be_expired
+    end
+  end
+
+  describe '#valid_times?' do
+    let(:hour) { 10 }
+    let(:min) { 15 }
+    let(:today) { Date.current }
+
+    it 'returns true if valid timeframe' do
+      mock_time = Time.new today.year, today.month, today.day, hour, min
+      coupon = Coupons::Models::Coupon.new valid_coupon_params
+
+      allow(Time).to receive(:now) { mock_time.localtime }
+
+      coupon.assign_attributes valid_from_time: time_to_str, valid_until_time: time_to_str(24)
+      coupon.save!
+      expect(coupon).to be_valid_times
+
+      min_from = time_to_str(hour)
+      min_until = time_to_str(hour, min + 15)
+      coupon.update valid_from_time: min_from, valid_until_time: min_until
+      expect(coupon).to be_valid_times
+
+      min_from = time_to_str(hour, min)
+      min_until = time_to_str(hour, min + 1)
+      coupon.update valid_from_time: min_from, valid_until_time: min_until
+      expect(coupon).to be_valid_times
+    end
+
+    it 'returns false if invalid timeframe' do
+      mock_time = Time.new today.year, today.month, today.day, hour, min
+      coupon = create_coupon valid_coupon_params
+
+      allow(Time).to receive(:now) { mock_time.localtime }
+
+      coupon.update valid_from_time: time_to_str(10, min - 15), valid_until_time: time_to_str(10, min)
+      expect(coupon).not_to be_valid_times
+
+      coupon.update valid_from_time: time_to_str(10, min + 1), valid_until_time: time_to_str(10, min + 15)
+      expect(coupon).not_to be_valid_times
+    end
+  end
+
+  describe '#redeemable?' do
     it 'if not expired' do
       coupon = create_coupon valid_coupon_params
-      coupon.valid_until = 3.days.from_now
-      expect(coupon.reload).to be_redeemable
+      coupon.valid_until_date = 3.days.from_now
+      expect(coupon).to be_redeemable
+    end
+
+    it 'if within valid time range' do
+      hour = 10
+      min = 15
+      today = Date.current
+      coupon = create_coupon valid_coupon_params
+
+      mock_time = Time.new today.year, today.month, today.day, hour, min
+      allow(Time).to receive(:now) { mock_time.localtime }
+
+      coupon.update(
+        valid_from_date: today, valid_until_date: today + 1.day,
+        valid_from_time: time_to_str(0), valid_until_time: time_to_str(24, 0, 0)
+      )
+      expect(coupon).to be_redeemable
+
+      coupon.update(
+        valid_from_date: today, valid_until_date: today + 1.day,
+        valid_from_time: time_to_str(hour, min), valid_until_time: time_to_str(hour, min + 1)
+      )
+      expect(coupon).to be_redeemable
+
+      coupon.update(
+        valid_from_date: today, valid_until_date: today + 1.day,
+        valid_from_time: time_to_str(hour), valid_until_time: time_to_str(hour, min + 30)
+      )
+      expect(coupon).to be_redeemable
     end
 
     it 'if no global limit is set' do
@@ -330,16 +515,15 @@ describe Coupons::Models::Coupon do
       expect(coupon.redeemable?(user_id)).to be false
     end
 
-    it "fails if it's expired" do
+    it "fails if expired" do
       coupon = create_coupon(amount: 100, type: 'amount')
-      Coupons::Models::Coupon.update_all valid_until: 3.days.ago
-      coupon.reload
+      Coupons::Models::Coupon.update_all valid_until_date: 3.days.ago
 
       expect(coupon.reload).not_to be_redeemable
     end
 
     it 'fails if current date > starting date' do
-      coupon = create_coupon(amount: 100, type: 'amount', valid_from: 3.days.from_now)
+      coupon = create_coupon(amount: 100, type: 'amount', valid_from_date: 3.days.from_now)
       expect(coupon.reload).not_to be_redeemable
     end
 

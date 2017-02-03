@@ -75,26 +75,50 @@
 
   <div class="form-group">
     <div class="form-label">
-      <%= form.label :valid_from %>
-      <%= form.hint :valid_from %>
+      <%= form.label :valid_from_date %>
+      <%= form.hint :valid_from_date %>
     </div>
 
     <div class="form-control">
-      <%= form.date_select :valid_from, include_blank: true, start_year: Date.current.year, end_year: Date.current.year + 10 %>
-      <%= form.error_for :valid_from %>
+      <%= form.date_select :valid_from_date, include_blank: true, start_year: Date.current.year, end_year: Date.current.year + 10 %>
+      <%= form.error_for :valid_from_date %>
     </div>
   </div>
 
   <div class="form-group">
     <div class="form-label">
-      <%= form.label :valid_until %>
-      <%= form.hint :valid_until %>
+      <%= form.label :valid_until_date %>
+      <%= form.hint :valid_until_date %>
     </div>
 
     <div class="form-control">
-      <%= form.date_select :valid_until, include_blank: true,
+      <%= form.date_select :valid_until_date, include_blank: true,
         start_year: Date.current.year, end_year: Date.current.year + 10 %>
-      <%= form.error_for :valid_until %>
+      <%= form.error_for :valid_until_date %>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <div class="form-label">
+      <%= form.label :valid_from_time %>
+      <%= form.hint :valid_from_time %>
+    </div>
+
+    <div class="form-control">
+      <%= form.time_select :valid_from_time, include_blank: true %>
+      <%= form.error_for :valid_from_time %>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <div class="form-label">
+      <%= form.label :valid_until_time %>
+      <%= form.hint :valid_until_time %>
+    </div>
+
+    <div class="form-control">
+      <%= form.time_select :valid_until_time, include_blank: true %>
+      <%= form.error_for :valid_until_time %>
     </div>
   </div>
 
