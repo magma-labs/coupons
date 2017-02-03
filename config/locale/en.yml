@@ -93,8 +93,10 @@ en:
         type: 'Type'
         amount: 'Amount'
         code: 'Discount Code'
-        valid_from: 'Valid From'
-        valid_until: 'Valid Until'
+        valid_from_date: 'Valid From Date'
+        valid_until_date: 'Valid Until Date'
+        valid_from_time: 'Valid From Time'
+        valid_until_time: 'Valid Until Time'
 
     hints:
       coupon:
@@ -104,8 +106,10 @@ en:
         redemption_limit_global: 'Total number of times this coupon can be used, independent of the user limit. Zero means no limit.'
         redemption_limit_user: 'Number of times a user can redeem a coupon, independent of global limit. Zero means no limit.'
         amount: 'This is the actual discount amount. 0-100 for percentage, zero or positive number for amount.'
-        valid_from: 'When this coupon will be available.'
-        valid_until: 'When will this coupon expire. By default, it does not expire.'
+        valid_from_date: 'When this coupon will be available.'
+        valid_until_date: 'When will this coupon expire. By default, it does not expire.'
+        valid_from_time: 'Start time when coupon can be redeemed.'
+        valid_until_time: 'End time when coupon can be redeemed.'
 
     form_error_description: 'You must double check the form:'
 
