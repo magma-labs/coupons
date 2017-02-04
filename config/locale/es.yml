@@ -107,8 +107,8 @@ es:
         amount: 'Esta es la cantidad del descuento. 0-100 define porcentaje. Cero o número positivo define cantidad'
         valid_from_date: 'Fecha de inicio de vigencia.'
         valid_until_date: 'Fecha de expiración. Si se omite, no expirará.'
-        valid_from_time: 'Válido desde hora'
-        valid_until_time: 'Válido hasta hora'
+        valid_from_time: 'Hora cuando se puede comenzar a canjear el cupón'
+        valid_until_time: 'Hora a la que expira el cupón'
 
     form_error_description: 'Debe revisar la forma:'
 
