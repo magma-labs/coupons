@@ -92,8 +92,10 @@ es:
         type: 'Tipo'
         amount: 'Cantidad'
         code: 'Código de descuento'
-        valid_from: 'Válido desde'
-        valid_until: 'Válido hasta'
+        valid_from_date: 'Válido desde fecha'
+        valid_until_date: 'Válido hasta fecha'
+        valid_from_time: 'Válido desde hora'
+        valid_until_time: 'Válido hasta hora'
 
     hints:
       coupon:
@@ -103,8 +105,10 @@ es:
         redemption_limit_global: 'Total de veces que este cupón se puede canjear, independiente del límite por usuario. Cero significa sin límite.'
         redemption_limit_user: 'Cantidad de veces que un usuario puede canjear este cupón, independiente del límite global. Cero significa sin límite.'
         amount: 'Esta es la cantidad del descuento. 0-100 define porcentaje. Cero o número positivo define cantidad'
-        valid_from: 'Fecha de inicio de vigencia.'
-        valid_until: 'Fecha de expiración. Si se omite, no expirará.'
+        valid_from_date: 'Fecha de inicio de vigencia.'
+        valid_until_date: 'Fecha de expiración. Si se omite, no expirará.'
+        valid_from_time: 'Válido desde hora'
+        valid_until_time: 'Válido hasta hora'
 
     form_error_description: 'Debe revisar la forma:'
 
