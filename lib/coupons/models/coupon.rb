@@ -63,14 +63,16 @@ module Coupons
       end
 
       def expired?
-        valid_until_date && valid_until_date <= Date.current
+        (valid_until_date || false) && valid_until_date <= Date.current
       end
 
       def valid_times?
-        timedate = Time.now
-        current_time = Time.utc 2000, 1, 1, timedate.hour, timedate.min
+        hms = "%H%M%S"
+        time_str = Time.zone.now.strftime(hms)
+        vft_str = valid_from_time.strftime(hms)
+        vit_str = valid_until_time.day == 2 ? '24:00:00' : valid_until_time.strftime(hms)
 
-        current_time >= valid_from_time && current_time < valid_until_time
+        time_str >= vft_str && time_str < vit_str
       end
 
       def available_global_redemptions?
@@ -90,7 +92,7 @@ module Coupons
       end
 
       def started?
-        valid_from_date <= Time.now
+        valid_from_date <= Time.zone.now
       end
 
       def redeemable?(user_id = nil)

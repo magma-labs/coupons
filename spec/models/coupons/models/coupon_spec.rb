@@ -386,10 +386,10 @@ describe Coupons::Models::Coupon do
     let(:today) { Date.current }
 
     it 'returns true if valid timeframe' do
-      mock_time = Time.new today.year, today.month, today.day, hour, min
+      mock_time = Time.utc today.year, today.month, today.day, hour, min
       coupon = Coupons::Models::Coupon.new valid_coupon_params
 
-      allow(Time).to receive(:now) { mock_time.localtime }
+      allow(Time).to receive(:now) { mock_time.utc }
 
       coupon.assign_attributes valid_from_time: time_to_str, valid_until_time: time_to_str(24)
       coupon.save!
@@ -433,8 +433,8 @@ describe Coupons::Models::Coupon do
       today = Date.current
       coupon = create_coupon valid_coupon_params
 
-      mock_time = Time.new today.year, today.month, today.day, hour, min
-      allow(Time).to receive(:now) { mock_time.localtime }
+      mock_time = Time.utc today.year, today.month, today.day, hour, min
+      allow(Time).to receive(:now) { mock_time.utc }
 
       coupon.update(
         valid_from_date: today, valid_until_date: today + 1.day,
