@@ -1,20 +1,23 @@
 module Coupons
   module Models
     class Coupon < ActiveRecord::Base
-      # Allow using `type` as a column.
-      self.inheritance_column = nil
 
       # Set table name.
       self.table_name = :coupons
 
+      # Single Table Inheritance
+      self.inheritance_column = :recurrence_type
+
       # Set default values.
       after_initialize do
         self.code ||= Coupons.configuration.generator.call
+        self.recurrence_type ||= 'Coupons::Models::Coupon'
         self.valid_from_date ||= Date.current
 
         attachments_will_change!
         write_attribute :attachments, {} if attachments.empty?
       end
+
 
       has_many :redemptions, class_name: 'Coupons::Models::CouponRedemption'
 

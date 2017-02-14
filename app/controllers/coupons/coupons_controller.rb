@@ -102,16 +102,20 @@ class Coupons::CouponsController < Coupons::ApplicationController
     params
       .require(:coupon)
       .permit(
+        :amount,
         :code,
+        :description,
+        :recurrence_type,
         :redemption_limit_global,
         :redemption_limit_user,
-        :description,
+        :type,
         :valid_from_date,
-        :valid_until_date,
         :valid_from_time,
+        :valid_until_date,
         :valid_until_time,
-        :amount,
-        :type
+        # see https://github.com/rails/rails/issues/9454
+        # you will need to customize 'recurrence' to fit your business logic
+        recurrence: { days: [] }
       )
   end
 end

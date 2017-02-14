@@ -6,4 +6,12 @@ Coupons::Engine.routes.draw do
     get :remove, on: :member
     get :duplicate, on: :member
   end
+
+  scope path: 'coupons', as: 'coupons' do
+    resources(
+      :weekly,
+      controller: 'coupons',
+      recurrence_type: 'Coupons::Models::CouponWeekly'
+    )
+  end
 end

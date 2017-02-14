@@ -421,13 +421,13 @@ describe Coupons::Models::Coupon do
   end
 
   describe '#redeemable?' do
-    it 'if not expired' do
+    it 'is true if not expired' do
       coupon = create_coupon valid_coupon_params
       coupon.valid_until_date = 3.days.from_now
       expect(coupon).to be_redeemable
     end
 
-    it 'if within valid time range' do
+    it 'is true if within valid time range' do
       hour = 10
       min = 15
       today = Date.current
@@ -455,31 +455,31 @@ describe Coupons::Models::Coupon do
       expect(coupon).to be_redeemable
     end
 
-    it 'if no global limit is set' do
+    it 'is true if no global limit is set' do
       coupon = create_coupon valid_coupon_params
       coupon.redemption_limit_global = 0
       expect(coupon.reload).to be_redeemable
     end
 
-    it 'if no user limit is set' do
+    it 'is true if no user limit is set' do
       coupon = create_coupon valid_coupon_params
       coupon.redemption_limit_user = 0
       expect(coupon.reload).to be_redeemable
     end
 
-    it 'if no global limit is set and no user limit is set' do
+    it 'is true if no global limit is set and no user limit is set' do
       coupon = create_coupon valid_coupon_params
       coupon.attributes = { redemption_limit_global: nil, redemption_limit_user: nil }
       expect(coupon.reload).to be_redeemable
     end
 
-    it 'if there are globally available redemptions' do
+    it 'is true if there are globally available redemptions' do
       coupon = create_coupon valid_coupon_params
       coupon.redemption_limit_global = 5
       expect(coupon.reload).to be_redeemable
     end
 
-    it 'if there are available redemptions for user and current user id is defined' do
+    it 'is true if there are available redemptions for user and current user id is defined' do
       coupon = create_coupon valid_coupon_params
       user_limit = 3
       user_id = 43

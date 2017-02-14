@@ -8,9 +8,11 @@ module Coupons
   require 'coupons/globalid_serializer'
   require 'coupons/resolver'
   require 'coupons/models/coupon'
+  require 'coupons/models/coupon_weekly'
   require 'coupons/models/coupon_redemption'
   require 'coupons/form_builder'
   require 'coupons/coupon_type'
+  require 'coupons/recurrence_type'
   require 'coupons/finders/first_available'
   require 'coupons/finders/user_availability'
 
