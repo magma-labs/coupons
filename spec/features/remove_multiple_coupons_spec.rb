@@ -1,5 +1,4 @@
 require 'spec_helper'
-require 'byebug'
 
 feature 'Remove multiple coupons', js: true do
   scenario 'remove all selected' do

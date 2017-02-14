@@ -122,6 +122,31 @@
     </div>
   </div>
 
+  <div class="form-group">
+    <div class="form-label">
+      <%= form.label :recurrence_type %>
+      <%= form.hint :recurrence_type %>
+    </div>
+
+    <div class="form-control">
+      <%= form.select :recurrence_type, Coupons::RecurrenceType.to_select, include_blank: true %>
+      <%= form.error_for :recurrence_type %>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <div class="form-label">
+      <%= form.label :recurrence %>
+      <%= form.hint :recurrence %>
+    </div>
+
+    <div class="form-control">
+      <% rows, cols = (0..6).to_a, t('date.abbr_day_names') %>
+      <%= form.collection_check_boxes :recurrence, rows.zip(cols), :first, :last, checked: [] %>
+      <%= form.error_for :recurrence %>
+    </div>
+  </div>
+
   <div class="form-actions form-group">
     <%= form.submit t(form.object.persisted? ? 'edit' : 'create',
       scope: 'coupons.coupon.buttons'), class: 'button rounded green' %>
