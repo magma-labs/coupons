@@ -163,7 +163,7 @@ module Coupons
         end
 
         if valid_from_date.present? && valid_until_date.present?
-          errors.add(:valid_until_date, :coupon_valid_until_date) if valid_until_date <= valid_from_date
+          errors.add(:valid_until_date, :coupon_valid_until_date) if valid_until_date < valid_from_date
         end
       end
 
