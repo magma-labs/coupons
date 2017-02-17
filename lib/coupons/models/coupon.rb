@@ -159,8 +159,8 @@ module Coupons
       def validate_dates
         if valid_until_date_before_type_cast.present?
           errors.add(:valid_until_date, :invalid) unless valid_until_date.kind_of?(Date)
-          errors.add(:valid_until_date, :coupon_already_expired) if ((valid_until_date? && valid_until_date < Date.current) ||
-          (self.valid_from_date >= self.valid_until_date))
+          errors.add(:valid_until_date, :coupon_already_expired) if valid_until_date? && valid_until_date < Date.current &&
+          valid_from_date > valid_until_date
         end
 
         if valid_from_date.present? && valid_until_date.present?
