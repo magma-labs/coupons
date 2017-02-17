@@ -134,5 +134,5 @@ es:
         coupon_already_expired: debe ser mayor a hoy
         coupon_code_not_unique: ya existe entre los cupones vigentes y no agotados
         coupon_recurrence: no es válida
-        coupon_valid_until_date: debe ser mayor a o igual la fecha de inicio de vigencia
+        coupon_valid_until_date: debe ser mayor a la fecha de inicio de vigencia
         coupon_valid_until_time: debe ser igual o mayor a la hora de inicio
