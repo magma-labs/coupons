@@ -153,6 +153,7 @@ module Coupons
       end
 
       def validate_dates
+        puts 'YA ENTRO!!!!!!'
         if valid_until_date_before_type_cast.present?
           is_valid =
             valid_until_date? && valid_until_date < Date.current &&
