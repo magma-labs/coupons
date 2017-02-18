@@ -156,10 +156,11 @@ module Coupons
         if valid_until_date_before_type_cast.present?
           errors.add(:valid_until_date, :invalid) unless valid_until_date.kind_of?(Date)
           errors.add(:valid_until_date, :coupon_already_expired) if valid_until_date? && valid_until_date < Date.current
+          errors.add(:valid_until_date, :coupon_valid_until_date) if valid_until_date <= valid_from_date
         end
 
         if valid_from_date.present? && valid_until_date.present?
-          errors.add(:valid_until_date, :coupon_valid_until_date) if valid_until_date <= valid_from_date
+          errors.add(:valid_until_date, :coupon_valid_until_date) if valid_until_date < valid_from_date
         end
       end
 
