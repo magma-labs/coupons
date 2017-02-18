@@ -131,6 +131,7 @@ es:
   activerecord:
     errors:
       messages:
+        invalid_amount: la cantidad del valor del cupón no puede ser cero
         coupon_already_expired: debe ser mayor a hoy
         coupon_code_not_unique: ya existe entre los cupones vigentes y no agotados
         coupon_recurrence: no es válida
