@@ -1,10 +1,10 @@
 language: ruby
 cache: bundler
 sudo: false
+dist: trusty
 
 rvm:
-  - '2.1'
-  - '2.2'
+  - '2.3'
 
 cache:
   directories:
@@ -19,15 +19,16 @@ before_install:
   - "phantomjs --version"
 
 addons:
-  postgresql: '9.4'
+  postgresql: '9.6'
+
+services:
+  - postgresql
 
 before_script:
   - psql -c 'create database coupons_test;' -U postgres
-  - mysql -e 'create database coupons_test;' -u root
 
 env:
   - 'DATABASE_URL=postgres://postgres@localhost/coupons_test'
-  - 'DATABASE_URL=mysql2://root@localhost/coupons_test'
 
 gemfile:
   - Gemfile
