@@ -110,6 +110,8 @@ module Coupons
         else
           coupon_status = 'Sin estado'
         end
+
+        coupon_status
       end
 
       def redeemable?(user_id = nil)
