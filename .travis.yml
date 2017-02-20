@@ -19,7 +19,7 @@ before_install:
   - "phantomjs --version"
 
 addons:
-  postgresql: '9.4'
+  postgresql: '9.6'
 
 before_script:
   - psql -c 'create database coupons_test;' -U postgres
