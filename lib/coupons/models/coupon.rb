@@ -98,6 +98,22 @@ module Coupons
         valid_from_date <= Time.zone.now
       end
 
+      def status
+        if !available_global_redemptions?
+          coupon_status = 'Agotado'
+        elsif !started?
+          coupon_status = 'Pendiente'
+        elsif redeemable?
+          coupon_status = 'Activo'
+        elsif !redeemable?
+          coupon_status = 'Expirado'
+        else
+          coupon_status = 'Sin estado'
+        end
+
+        coupon_status
+      end
+
       def redeemable?(user_id = nil)
         started? && !expired? && valid_times? &&
           available_global_redemptions? &&
