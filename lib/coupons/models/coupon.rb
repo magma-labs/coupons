@@ -43,7 +43,7 @@ module Coupons
       validates_numericality_of :redemption_limit_user,
                                 greater_than_or_equal_to: 0
 
-      validate :validate_dates, :validate_times, :validate_code_uniqueness
+      validate :validate_amount, :validate_dates, :validate_times, :validate_code_uniqueness
 
       def apply(options)
         input_amount = BigDecimal(options[:amount].to_s)
@@ -169,14 +169,16 @@ module Coupons
       end
 
       def validate_dates
-        if valid_until_date_before_type_cast.present?
-          errors.add(:valid_until_date, :invalid) unless valid_until_date.kind_of?(Date)
-          errors.add(:valid_until_date, :coupon_already_expired) if valid_until_date? && valid_until_date < Date.current
-        end
+        if valid_until_date?
+          is_valid = valid_until_date? && valid_until_date > valid_from_date
 
-        if valid_from_date.present? && valid_until_date.present?
-          errors.add(:valid_until_date, :coupon_valid_until) if valid_until_date < valid_from_date
+          errors.add(:valid_until_date, :invalid) unless valid_until_date.kind_of?(Date)
+          errors.add(:valid_until_date, :coupon_valid_until_date) unless is_valid
         end
+      end
+
+      def validate_amount
+        errors.add(:amount, :invalid_amount) if amount.zero?
       end
 
       def validate_times

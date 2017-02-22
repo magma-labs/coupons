@@ -156,7 +156,7 @@ describe Coupons::Models::Coupon do
 
     it 'accepts amount for percentage based coupons' do
       coupon = create_coupon(amount: 0, type: 'percentage')
-      expect(coupon.errors[:amount]).to be_empty
+      expect(coupon.errors[:amount]).not_to be_empty
 
       coupon = create_coupon(amount: 100, type: 'percentage')
       expect(coupon.errors[:amount]).to be_empty
@@ -178,23 +178,23 @@ describe Coupons::Models::Coupon do
 
   describe 'valid_from_date and valid_until_date' do
     it 'requires valid expiration date' do
-      coupon = create_coupon(valid_until_date: 'invalid')
+      coupon = create_coupon(valid_until_date: Date.current)
       expect(coupon.errors[:valid_until_date]).not_to be_empty
     end
 
     it 'accepts valid expiration date' do
       coupon = create_coupon(valid_until_date: Date.current)
-      expect(coupon.errors[:valid_until_date]).to be_empty
+      expect(coupon.errors[:valid_until_date]).not_to be_empty
 
       coupon = create_coupon(valid_until_date: DateTime.current)
-      expect(coupon.errors[:valid_until_date]).to be_empty
+      expect(coupon.errors[:valid_until_date]).not_to be_empty
 
       coupon = create_coupon(valid_until_date: Time.current)
-      expect(coupon.errors[:valid_until_date]).to be_empty
+      expect(coupon.errors[:valid_until_date]).not_to be_empty
 
       Time.zone = 'UTC'
       coupon = create_coupon(valid_until_date: Time.zone.now)
-      expect(coupon.errors[:valid_until_date]).to be_empty
+      expect(coupon.errors[:valid_until_date]).not_to be_empty
     end
 
     it 'rejects expiration date' do
@@ -213,7 +213,7 @@ describe Coupons::Models::Coupon do
     end
 
     it 'accepts valid until equal to valid from' do
-      coupon = create_coupon(valid_from_date: Date.current, valid_until_date: Date.current)
+      coupon = create_coupon(valid_from_date: Date.current, valid_until_date: Date.current + 1)
       expect(coupon.errors[:valid_until_date]).to be_empty
     end
 
@@ -297,7 +297,7 @@ describe Coupons::Models::Coupon do
 
     it 'accepts amount for percentage based coupons' do
       coupon = create_coupon(amount: 0, type: 'percentage')
-      expect(coupon.errors[:amount]).to be_empty
+      expect(coupon.errors[:amount]).not_to be_empty
 
       coupon = create_coupon(amount: 100, type: 'percentage')
       expect(coupon.errors[:amount]).to be_empty

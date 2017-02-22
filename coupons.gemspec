@@ -33,10 +33,10 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'rspec-rails'
   spec.add_development_dependency 'codeclimate-test-reporter'
   spec.add_development_dependency 'pry-meta'
-  spec.add_development_dependency 'mysql2', '~> 0.3.13'
   spec.add_development_dependency 'generator_spec'
   spec.add_development_dependency 'database_cleaner'
   spec.add_development_dependency 'globalid'
+  spec.add_development_dependency 'phantomjs'
   spec.add_development_dependency 'capybara'
   spec.add_development_dependency 'poltergeist'
 end
