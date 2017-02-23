@@ -24,7 +24,7 @@ module Coupons
       end
 
       def valid_recurrence?
-        recurrence['days'].include? Time.zone.now.wday
+        recurrence['days'].include? Time.zone.now.wday.to_s
       end
 
       def redeemable?(user_id = nil)
