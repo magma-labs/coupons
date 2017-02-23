@@ -98,6 +98,10 @@ module Coupons
         valid_from_date <= Time.zone.now
       end
 
+      def recurrente?
+        true if recurrence_type == 'Coupons::Models::CouponWeekly'
+      end
+
       def status
         if !available_global_redemptions?
           coupon_status = 'Agotado'
@@ -107,6 +111,8 @@ module Coupons
           coupon_status = 'Activo'
         elsif !expired? && !valid_times?
           coupon_status = 'Inactivo'
+        elsif recurrente?
+          coupon_status = 'Recurrente'          
         elsif !redeemable?
           coupon_status = 'Expirado'
         else
