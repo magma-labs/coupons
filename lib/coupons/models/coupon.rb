@@ -105,6 +105,8 @@ module Coupons
           coupon_status = 'Pendiente'
         elsif redeemable?
           coupon_status = 'Activo'
+        elsif !expired? && !valid_times?
+          coupon_status = 'Inactivo'
         elsif !redeemable?
           coupon_status = 'Expirado'
         else
