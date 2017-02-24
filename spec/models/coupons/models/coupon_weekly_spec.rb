@@ -47,7 +47,7 @@ describe Coupons::Models::CouponWeekly do
     it 'is true if valid day of the week' do
       mocked_date = Time.zone.now
       coupon = Coupons::Models::CouponWeekly.new valid_coupon_params
-      wday_today = mocked_date.wday
+      wday_today = mocked_date.wday.to_s
       wday_in_two_days = (mocked_date + 2.days).wday
       coupon.recurrence = { days: [wday_today, wday_in_two_days] }
 
