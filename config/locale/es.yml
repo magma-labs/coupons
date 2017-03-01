@@ -85,7 +85,7 @@ es:
             notice: 'Los cupones han sido eliminados!'
 
     labels:
-      coupon:
+      coupon: &coupon_labels
         description: 'Descripción'
         redemption_limit_global: 'Límite de canjeo global'
         redemption_limit_user: 'Límite de canjeo por usuario'
@@ -96,9 +96,12 @@ es:
         valid_until_date: 'Válido hasta fecha'
         valid_from_time: 'Válido desde hora'
         valid_until_time: 'Válido hasta hora'
+        recurrence_type: 'Recurrencia'
+      coupon_weekly:
+        <<: *coupon_labels
 
     hints:
-      coupon:
+      coupon: &coupon_hints
         amount: 'Esta es la cantidad del descuento. 0-100 define porcentaje. Cero o número positivo define cantidad'
         code: 'El cliente capturará este código al momento de realizar el pago.'
         description: 'Descripción del cupón que permita recordar su finalidad.'
@@ -110,6 +113,8 @@ es:
         valid_from_time: 'Hora cuando se puede comenzar a canjear el cupón'
         valid_until_date: 'Fecha de expiración. Si se omite, no expirará.'
         valid_until_time: 'Hora a la que expira el cupón'
+      coupon_weekly:
+        <<: *coupon_hints
 
     form_error_description: 'Debe revisar la forma:'
 
