@@ -107,13 +107,13 @@ module Coupons
           coupon_status = 'Agotado'
         elsif !started?
           coupon_status = 'Pendiente'
-        elsif redeemable?
+        elsif available?
           coupon_status = 'Activo'
         elsif !expired? && !valid_times?
           coupon_status = 'Inactivo'
         elsif recurrente?
           coupon_status = 'Recurrente'          
-        elsif !redeemable?
+        elsif !available?
           coupon_status = 'Expirado'
         else
           coupon_status = 'Sin estado'
@@ -126,6 +126,11 @@ module Coupons
         started? && !expired? && valid_times? &&
           available_global_redemptions? &&
           available_user_redemptions?(user_id)
+      end
+
+      def available?
+        started? && !expired? && valid_times? &&
+          available_global_redemptions?
       end
 
       def to_partial_path
